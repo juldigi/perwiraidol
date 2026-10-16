@@ -2185,12 +2185,11 @@ function trendIndividualNames(rowName, knownNames) {
   };
   const individualNames = [...new Set((knownNames || [])
     .map(n => String(n || "").trim())
-    .filter(n => n && !isGroupName(n)))]
-    .sort((a,b) => b.length - a.length);
-  const matched = individualNames.filter(containsWholeName);
-  if (matched.length) return matched;
-  // Nama tunggal tetap dapat direkap meskipun belum ada di daftar cache.
-  return isGroupName(raw) ? [] : [raw];
+    .filter(n => n && !isGroupName(n)))].sort((a,b) => b.length - a.length);
+  // Rekap hanya boleh menghasilkan nama peserta resmi. Baris duet/trio
+  // dipetakan ke setiap nama anggota yang cocok; label grup tak pernah jadi
+  // kategori/seri tersendiri jika tidak ada nama anggota yang cocok.
+  return individualNames.filter(containsWholeName);
 }
 
 function aggregateTrendRows(rows, knownNames) {
