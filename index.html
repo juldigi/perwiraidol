@@ -2157,61 +2157,97 @@ async function renderTrend(content) {
   renderSubFilter();
 }
 
+// Normalisasi nama peserta pada entri solo maupun duet/trio.
+// Skor performa grup dikreditkan ke setiap anggota grup agar total individu
+// merupakan gabungan skor solo dan skor duet/trio yang diikutinya.
+function trendIndividualNames(rowName, knownNames) {
+  const raw = String(rowName || "").trim();
+  if (!raw) return [];
+  const individualNames = (knownNames || [])
+    .map(n => String(n || "").trim())
+    .filter(n => n && !/(?:&|\\+|\\bdan\\b|\\bfeat\\.?\\b|\\bft\\.?\\b|,|\\/|\\bx\\b)/i.test(n))
+    .sort((a,b) => b.length - a.length);
+  const normalized = raw.toLocaleLowerCase("id-ID");
+  const matched = individualNames.filter(n => {
+    const escaped = n.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\$&");
+    return new RegExp("(^|[^\\p{L}\\p{N}])" + escaped + "($|[^\\p{L}\\p{N}])", "iu").test(normalized);
+  });
+  if (matched.length) return [...new Set(matched)];
+  // Jika nama pada baris memang nama individu, pertahankan apa adanya.
+  if (!/(?:&|\\+|\\bdan\\b|\\bfeat\\.?\\b|\\bft\\.?\\b|,|\\/)/i.test(raw)) return [raw];
+  return [];
+}
+
+function aggregateTrendRows(rows, knownNames) {
+  const totals = new Map();
+  (rows || []).forEach(row => {
+    const score = Number(row.total ?? row.effectiveTotal ?? row.totalEfektif ?? 0);
+    if (!Number.isFinite(score)) return;
+    trendIndividualNames(row.nama, knownNames).forEach(name => {
+      totals.set(name, (totals.get(name) || 0) + score);
+    });
+  });
+  return totals;
+}
+
+async function fetchTrendStage(stage, juri) {
+  const params = { stage };
+  if (juri) params.juri = juri;
+  const data = await api("getRecap", params);
+  return aggregateTrendRows(data.recap || [], window._trendInitCache?.names || []);
+}
+
 async function updateTrendView() {
-  const mode = document.getElementById("selTrendMode").value;
+  const modeEl = document.getElementById("selTrendMode");
   const chartContainer = document.getElementById("chartContainer");
+  if (!modeEl || !chartContainer) return;
   chartContainer.style.opacity = "0.5";
   const juriEl = document.getElementById("selTrendJuri");
   const juri = juriEl ? juriEl.value : "";
   const juriLabel = juri ? ` (${juri})` : " (Total Seluruh Juri)";
+  const knownNames = (window._trendInitCache && window._trendInitCache.names) || [];
 
-  if (mode === "stage") {
-    const stageEl = document.getElementById("selTrendStage");
-    const stage = stageEl ? stageEl.value : STAGES[0];
-    try {
-      const params = { stage };
-      if (juri) params.juri = juri;
-      const data = await api("getRecap", params);
-      const rows = data.recap || [];
-      const labels = rows.map(r => r.nama);
-      const values = rows.map(r => r.total);
-      drawTrendChart(labels, values, `Nilai Total Peserta — ${stage}${juriLabel}`);
-    } catch (e) {
-      showToast("Gagal memuat data babak", true);
-    }
-  } else if (mode === "participant") {
-    const pEl = document.getElementById("selTrendPeserta");
-    const nama = pEl ? pEl.value : "";
-    if (!nama) { chartContainer.style.opacity = "1"; return; }
-    try {
-      const params = { nama };
-      if (juri) params.juri = juri;
-      const trend = await api("getTrend", params);
-      drawTrendChart(trend.labels || [], trend.values || [], `Grafik Performa: ${nama}${juriLabel}`);
-    } catch (e) {
-      showToast("Gagal memuat trend peserta", true);
-    }
-  } else if (mode === "combined") {
-    try {
-      // Dulu: 12 request paralel (1 per babak) ke Apps Script -> sangat lambat
-      // dan rawan timeout/quota. Sekarang: 1 request, server yang menggabungkan
-      // ke-12 babak dalam satu eksekusi.
-      const params = {};
-      if (juri) params.juri = juri;
-      const data = await api("getCombinedRecap", params);
-      const labels = data.labels || [];
-      const values = data.values || [];
-
-      if (labels.length === 0) {
+  try {
+    if (modeEl.value === "stage") {
+      const stageEl = document.getElementById("selTrendStage");
+      const stage = stageEl ? stageEl.value : STAGES[0];
+      const totals = await fetchTrendStage(stage, juri);
+      const entries = [...totals.entries()].sort((a,b) => b[1] - a[1]);
+      drawTrendChart(entries.map(e => e[0]), entries.map(e => Number(e[1].toFixed(2))),
+        `Total Per Peserta — ${stage}${juriLabel}`);
+    } else if (modeEl.value === "participant") {
+      const pEl = document.getElementById("selTrendPeserta");
+      const nama = pEl ? pEl.value : "";
+      if (!nama) { chartContainer.style.opacity = "1"; return; }
+      const stageMaps = await Promise.all(STAGES.map(stage => fetchTrendStage(stage, juri)));
+      const labels = [];
+      const values = [];
+      stageMaps.forEach((totals, i) => {
+        if (totals.has(nama)) {
+          labels.push(STAGES[i]);
+          values.push(Number(totals.get(nama).toFixed(2)));
+        }
+      });
+      drawTrendChart(labels, values, `Total Per Babak: ${nama}${juriLabel}`);
+    } else if (modeEl.value === "combined") {
+      const stageMaps = await Promise.all(STAGES.map(stage => fetchTrendStage(stage, juri)));
+      const totals = new Map();
+      stageMaps.forEach(map => map.forEach((score, name) => {
+        totals.set(name, (totals.get(name) || 0) + score);
+      }));
+      const entries = [...totals.entries()].sort((a,b) => b[1] - a[1]);
+      if (!entries.length) {
         showToast("Belum ada data rekap gabungan", true);
       } else {
-        drawTrendChart(labels, values, `Rata-Rata Nilai Seluruh Babak (Semua Peserta)${juriLabel}`);
+        drawTrendChart(entries.map(e => e[0]), entries.map(e => Number(e[1].toFixed(2))),
+          `Akumulasi Nilai Seluruh Babak per Peserta${juriLabel}`);
       }
-    } catch (e) {
-      showToast("Gagal memuat rekap gabungan", true);
     }
+  } catch (e) {
+    showToast("Gagal memuat data trend. Silakan coba kembali.", true);
+  } finally {
+    chartContainer.style.opacity = "1";
   }
-  chartContainer.style.opacity = "1";
 }
 
 let trendChartInstance = null;
