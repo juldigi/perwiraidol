@@ -2031,8 +2031,47 @@ async function renderRekap(content) {
   }
 }
 
+function aggregateRecapRowsByParticipant(rows, knownNames) {
+  const sourceRows = rows || [];
+  const officialNames = (knownNames || []).map(n => String(n || "").trim()).filter(Boolean);
+  const names = officialNames.length ? officialNames : sourceRows
+    .map(r => String(r.nama || "").trim())
+    .filter(n => n && !/[&+,/]/.test(n) && !/\b(dan|feat|ft)\b/i.test(n) && !/\s+x\s+/i.test(n));
+  const merged = new Map();
+  sourceRows.forEach(row => {
+    const score = Number(row.total ?? row.effectiveTotal ?? row.totalEfektif ?? 0);
+    if (!Number.isFinite(score)) return;
+    const members = trendIndividualNames(row.nama, names);
+    members.forEach(name => {
+      if (!merged.has(name)) {
+        merged.set(name, {
+          nama: name,
+          nomorUrut: row.nomorUrut ?? "",
+          laguSet: new Set(),
+          total: 0
+        });
+      }
+      const item = merged.get(name);
+      item.total += score;
+      const song = String(row.lagu || "").trim();
+      if (song) item.laguSet.add(song);
+      if (item.nomorUrut === "" && row.nomorUrut != null) item.nomorUrut = row.nomorUrut;
+    });
+  });
+  return [...merged.values()]
+    .map((r, i) => ({
+      nama: r.nama,
+      nomorUrut: r.nomorUrut || (i + 1),
+      lagu: [...r.laguSet].join(" + "),
+      total: r.total
+    }))
+    .sort((a,b) => b.total - a.total);
+}
+
 function paintRekap(content, data) {
-  const rows = data.recap || [];
+  const rawRows = data.recap || [];
+  const knownNames = (window._trendInitCache && window._trendInitCache.names) || [];
+  const rows = aggregateRecapRowsByParticipant(rawRows, knownNames);
   const juri = window._rekapJuriFilter || "";
   content.innerHTML = `
     <div class="panel p-4 circuit-line overflow-x-auto">
