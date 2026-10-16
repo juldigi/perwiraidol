@@ -2020,14 +2020,14 @@ async function renderRekap(content) {
   const cacheKey = juri || "__all__";
   const hasCache = !!(window._rekapCache && window._rekapCache._key === cacheKey);
   if (hasCache) paintRekap(content, window._rekapCache);
-  else content.innerHTML = \`<div class="text-slate-400 p-6 text-center">Memuat data rekap...</div>\`;
+  else content.innerHTML = `<div class="text-slate-400 p-6 text-center">Memuat data rekap...</div>`;
   try {
     const data = await api("getRecap", juri ? { juri } : {}, { silent: hasCache });
     data._key = cacheKey;
     window._rekapCache = data;
     if (document.body.contains(content)) paintRekap(content, data);
   } catch (e) {
-    if (!hasCache) content.innerHTML = \`<div class="text-red-400 p-6 text-center">Gagal memuat data rekap.</div>\`;
+    if (!hasCache) content.innerHTML = `<div class="text-red-400 p-6 text-center">Gagal memuat data rekap.</div>`;
   }
 }
 
