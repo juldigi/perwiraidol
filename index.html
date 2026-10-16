@@ -2163,16 +2163,20 @@ async function renderTrend(content) {
 function trendIndividualNames(rowName, knownNames) {
   const raw = String(rowName || "").trim();
   if (!raw) return [];
-  const groupPattern = /(?:&|\\+|\\bdan\\b|\\bfeat\\.?\\b|\\bft\\.?\\b|,|\\/)/i;
+  const isGroupName = value => {
+    const s = String(value || "").toLocaleLowerCase("id-ID");
+    return s.includes("&") || s.includes("+") || s.includes(" dan ") ||
+      s.includes(",") || s.includes("/") || s.includes(" feat ") ||
+      s.includes(" ft ") || s.includes(" x ");
+  };
   const individualNames = (knownNames || [])
     .map(n => String(n || "").trim())
-    .filter(n => n && !groupPattern.test(n))
+    .filter(n => n && !isGroupName(n))
     .sort((a,b) => b.length - a.length);
   const normalized = raw.toLocaleLowerCase("id-ID");
   const matched = individualNames.filter(n => normalized.includes(n.toLocaleLowerCase("id-ID")));
   if (matched.length) return [...new Set(matched)];
-  // Jika nama pada baris memang nama individu, pertahankan apa adanya.
-  if (!groupPattern.test(raw)) return [raw];
+  if (!isGroupName(raw)) return [raw];
   return [];
 }
 
