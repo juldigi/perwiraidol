@@ -1,0 +1,2294 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Perwira Idol Season 2 — Panel Juri</title>
+<style>
+  :root{
+    --bg-void:#0a0e14;
+    --bg-panel:#10161f;
+    --bg-card:#141b26;
+    --line:#22303f;
+    --cyan:#38f0e0;
+    --cyan-dim:#1c8f86;
+    --amber:#ffb347;
+    --amber-dim:#a56b1f;
+    --red:#ff5c6c;
+    --green:#3ddc84;
+  }
+  *{
+    box-sizing: border-box;
+    -webkit-tap-highlight-color:transparent;
+  }
+  body{
+    margin: 0;
+    padding: 0;
+    background:
+      radial-gradient(circle at 15% 0%, rgba(56,240,224,0.07), transparent 40%),
+      radial-gradient(circle at 100% 100%, rgba(255,179,71,0.06), transparent 45%),
+      var(--bg-void);
+    color:#e7edf3;
+    font-family:'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height:100vh;
+  }
+  .font-display{font-family:'Arial Black', 'Segoe UI', sans-serif; letter-spacing:0.02em;}
+  .mono{font-family:'Consolas','Courier New',monospace;}
+  .spotlight-text{
+    background:linear-gradient(90deg,var(--cyan),var(--amber));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .panel{background:var(--bg-panel);border:1px solid var(--line);border-radius:16px;}
+  .card{background:var(--bg-card);border:1px solid var(--line);border-radius:14px;transition:all .2s ease;}
+  .card:active{transform:scale(0.98);}
+  .badge-wait{background:rgba(255,179,71,0.15);color:var(--amber);border:1px solid var(--amber-dim);}
+  .badge-done{background:rgba(61,220,132,0.15);color:var(--green);border:1px solid #1f7a4c;}
+  .btn-primary{background:linear-gradient(90deg,var(--cyan-dim),var(--cyan));color:#00201d;font-weight:800;border:none;cursor:pointer;}
+  .btn-primary:active{filter:brightness(0.9);}
+  .btn-save{background:linear-gradient(90deg,#1f9e5c,var(--green));color:#00220f;font-weight:900;border:none;cursor:pointer;}
+  .btn-save:disabled{background:#2a3340;color:#5b6b7a;}
+  input[type=range]{-webkit-appearance:none;height:10px;border-radius:6px;background:#1c2733;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #fff, var(--cyan) 60%);border:3px solid #04231f;cursor:pointer;
+    box-shadow:0 0 12px rgba(56,240,224,0.6);}
+  .circuit-line{position:relative;overflow:hidden;}
+  .circuit-line::before{content:'';position:absolute;inset:0;
+    background-image:
+      linear-gradient(90deg, transparent 95%, rgba(56,240,224,0.15) 95%, rgba(56,240,224,0.15) 100%),
+      linear-gradient(0deg, transparent 92%, rgba(255,179,71,0.08) 92%, rgba(255,179,71,0.08) 100%);
+    background-size:40px 40px; opacity:0.6; pointer-events:none;}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;
+    background:#0f2a22;border:1px solid #1f7a4c;color:var(--green);padding:14px 22px;border-radius:12px;
+    font-weight:700;transition:all .3s ease;z-index:2000;box-shadow:0 10px 30px rgba(0,0,0,.5);}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  .modal-backdrop{background:rgba(4,6,10,0.85);backdrop-filter:blur(4px);}
+  ::-webkit-scrollbar{width:6px;height:6px;} ::-webkit-scrollbar-thumb{background:var(--cyan-dim);border-radius:4px;}
+  .live-dot{width:9px;height:9px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red);
+    animation:pulse 1.4s infinite; display:inline-block;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+  .gear-ring{width:16px;height:16px;border:2px solid var(--cyan-dim);border-radius:50%;position:relative;display:inline-block;}
+  .gear-ring::after{content:'';position:absolute;inset:-4px;border:2px dashed rgba(56,240,224,0.3);border-radius:50%;
+    animation:spin 6s linear infinite;}
+  @keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
+  input[type=text],input[type=password],input[type=number],select{
+    background:#0d1420;border:1px solid var(--line);color:#e7edf3;border-radius:10px;padding:12px 14px;
+  }
+  input[type=text]:focus,input[type=password]:focus,input[type=number]:focus,select:focus{outline:2px solid var(--cyan-dim);}
+  table{border-collapse:collapse;}
+  th,td{border-bottom:1px solid var(--line);}
+
+  /* ===== SIDEBAR STYLES ===== */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 100%;
+    background: var(--bg-panel);
+    border-right: 1px solid var(--line);
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 10px 0 30px rgba(0,0,0,0.7);
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(4, 6, 10, 0.75);
+    backdrop-filter: blur(4px);
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .sidebar-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    color: #cbd5e1;
+    text-decoration: none;
+    border-radius: 10px;
+    margin: 4px 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .sidebar-item:hover, .sidebar-item.active {
+    background: rgba(56, 240, 224, 0.12);
+    color: var(--cyan);
+    border: 1px solid var(--cyan-dim);
+  }
+  .hamburger-btn {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--cyan);
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .hamburger-btn:hover {
+    background: rgba(56, 240, 224, 0.1);
+  }
+
+  /* ===== LAYOUT & UTILITY CLASSES ===== */
+  .min-h-screen { min-height: 100vh; }
+  .flex { display: flex; }
+  .flex-col { flex-direction: column; }
+  .flex-1 { flex: 1 1 0%; }
+  .flex-wrap { flex-wrap: wrap; }
+  .shrink-0 { flex-shrink: 0; }
+  .items-center { align-items: center; }
+  .items-baseline { align-items: baseline; }
+  .items-end { align-items: flex-end; }
+  .justify-center { justify-content: center; }
+  .justify-between { justify-content: space-between; }
+  
+  .grid { display: grid; }
+  .grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+  .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  
+  .gap-2 { gap: 0.5rem; }
+  .gap-3 { gap: 0.75rem; }
+  .gap-4 { gap: 1rem; }
+  
+  .space-y-1 > * + * { margin-top: 0.25rem; }
+  .space-y-2 > * + * { margin-top: 0.5rem; }
+  .space-y-3 > * + * { margin-top: 0.75rem; }
+  .space-y-5 > * + * { margin-top: 1.25rem; }
+  
+  .w-full { width: 100%; }
+  .w-8 { width: 2rem; }
+  .w-12 { width: 3rem; }
+  .w-16 { width: 4rem; }
+  .w-3 { width: 0.75rem; }
+  .h-3 { height: 0.75rem; }
+  .max-w-sm { max-width: 24rem; }
+  .max-w-md { max-width: 28rem; }
+  .max-h-92vh { max-height: 92vh; }
+  .min-h-2rem { min-height: 2rem; }
+  
+  .relative { position: relative; }
+  .absolute { position: absolute; }
+  .fixed { position: fixed; }
+  .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+  .z-50 { z-index: 50; }
+  
+  .m-3 { margin: 0.75rem; }
+  .mx-3 { margin-left: 0.75rem; margin-right: 0.75rem; }
+  .mx-auto { margin-left: auto; margin-right: auto; }
+  .my-3 { margin-top: 0.75rem; margin-bottom: 0.75rem; }
+  
+  .mb-1 { margin-bottom: 0.25rem; }
+  .mb-2 { margin-bottom: 0.5rem; }
+  .mb-3 { margin-bottom: 0.75rem; }
+  .mb-4 { margin-bottom: 1rem; }
+  .mb-6 { margin-bottom: 1.5rem; }
+  .mb-8 { margin-bottom: 2rem; }
+  .mt-0-5 { margin-top: 0.125rem; }
+  .mt-2 { margin-top: 0.5rem; }
+  .mt-3 { margin-top: 0.75rem; }
+  .mt-4 { margin-top: 1rem; }
+  .mt-6 { margin-top: 1.5rem; }
+  .mr-1 { margin-right: 0.25rem; }
+  
+  .p-2 { padding: 0.5rem; }
+  .p-3 { padding: 0.75rem; }
+  .p-4 { padding: 1rem; }
+  .p-5 { padding: 1.25rem; }
+  .p-6 { padding: 1.5rem; }
+  .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+  .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+  .px-4 { padding-left: 1rem; padding-right: 1rem; }
+  .px-5 { padding-left: 1.25rem; padding-right: 1.25rem; }
+  .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+  .py-1-5 { padding-top: 0.375rem; padding-bottom: 0.375rem; }
+  .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+  .py-2-5 { padding-top: 0.625rem; padding-bottom: 0.625rem; }
+  .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+  .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+  .pb-1 { padding-bottom: 0.25rem; }
+  .pb-10 { padding-bottom: 2.5rem; }
+  .pb-16 { padding-bottom: 4rem; }
+  .pr-2 { padding-right: 0.5rem; }
+  
+  .text-center { text-align: center; }
+  .text-right { text-align: right; }
+  .text-left { text-align: left; }
+  
+  .text-xs { font-size: 0.75rem; line-height: 1rem; }
+  .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+  .text-base { font-size: 1rem; line-height: 1.5rem; }
+  .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+  .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+  .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+  .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+  .text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
+  
+  .font-semibold { font-weight: 600; }
+  .font-bold { font-weight: 700; }
+  
+  .tracking-widest { letter-spacing: 0.1em; }
+  .tracking-wide-3 { letter-spacing: 0.3em; }
+  .leading-tight { line-height: 1.25; }
+  
+  .text-cyan-300 { color: var(--cyan); }
+  .text-amber-300 { color: var(--amber); }
+  .text-red-400 { color: var(--red); }
+  .text-slate-300 { color: #cbd5e1; }
+  .text-slate-400 { color: #94a3b8; }
+  .text-slate-500 { color: #64748b; }
+  
+  .hidden { display: none !important; }
+  .block { display: block; }
+  .inline-block { display: inline-block; }
+  
+  .rounded-sm { border-radius: 0.125rem; }
+  .rounded-lg { border-radius: 0.5rem; }
+  .rounded-xl { border-radius: 0.75rem; }
+  .rounded-2xl { border-radius: 1rem; }
+  .rounded-full { border-radius: 9999px; }
+  
+  .overflow-x-auto { overflow-x: auto; }
+  .overflow-y-auto { overflow-y: auto; }
+  .opacity-70 { opacity: 0.7; }
+  
+  .border { border-style: solid; border-width: 1px; }
+  .border-slate-600 { border: 1px solid #475569; }
+
+  @media (min-width: 640px) {
+    .sm\:items-center { align-items: center; }
+    .sm\:max-w-md { max-width: 28rem; }
+    .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+
+  /* ===== PERWIRA IDOL SEASON 2 — POSTER DNA v5 ===== */
+  :root{
+    --bg-void:#030314;
+    --bg-panel:rgba(8,8,30,.94);
+    --bg-card:rgba(13,12,39,.90);
+    --line:rgba(82,123,190,.32);
+    --cyan:#42d9ff;
+    --cyan-dim:#137da0;
+    --amber:#ff405c;
+    --amber-dim:#9f2444;
+    --red:#ff315d;
+    --green:#41e4b6;
+    --purple:#9658ff;
+    --gold:#f2d179;
+    --white:#f8fbff;
+  }
+
+  html{background:#030314;}
+  body{
+    position:relative;
+    overflow-x:hidden;
+    background:
+      radial-gradient(circle at 8% 0%, rgba(255,28,63,.17), transparent 27%),
+      radial-gradient(circle at 87% 4%, rgba(115,44,255,.20), transparent 30%),
+      radial-gradient(circle at 50% 105%, rgba(0,203,255,.12), transparent 42%),
+      linear-gradient(180deg,#040315 0%,#05041a 48%,#02030e 100%);
+    color:#f4f6ff;
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:0; pointer-events:none; z-index:-2;
+    background:
+      linear-gradient(90deg, transparent 0 3.8%, rgba(255,38,75,.32) 4%, transparent 4.15%),
+      linear-gradient(90deg, transparent 19%, rgba(95,35,255,.16) 19.15%, transparent 19.35%),
+      linear-gradient(90deg, transparent 47%, rgba(111,40,255,.14) 47.1%, transparent 47.28%),
+      linear-gradient(90deg, transparent 84%, rgba(0,210,255,.12) 84.12%, transparent 84.3%);
+    filter:blur(.2px);
+  }
+  body::after{
+    content:"";
+    position:fixed; inset:0; pointer-events:none; z-index:-1;
+    opacity:.15;
+    background-image:
+      linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+    background-size:48px 48px;
+    mask-image:linear-gradient(to bottom,rgba(0,0,0,.5),transparent 75%);
+  }
+
+  .font-display{
+    font-family:'Arial Narrow','Roboto Condensed','Arial Black','Segoe UI',sans-serif;
+    letter-spacing:.055em;
+    text-transform:uppercase;
+  }
+  .spotlight-text{
+    background:linear-gradient(105deg,#fff 0%,#f7f8ff 28%,#5ce3ff 58%,#ff4867 92%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    text-shadow:0 0 24px rgba(66,217,255,.10);
+  }
+
+  .panel{
+    background:
+      linear-gradient(180deg,rgba(13,13,45,.96),rgba(5,6,24,.96));
+    border:1px solid rgba(79,199,255,.25);
+    border-radius:10px;
+    box-shadow:
+      0 16px 42px rgba(0,0,0,.35),
+      inset 0 1px 0 rgba(255,255,255,.035),
+      0 0 0 1px rgba(153,72,255,.06);
+  }
+  .card{
+    position:relative;
+    background:linear-gradient(145deg,rgba(14,13,43,.97),rgba(7,8,29,.95));
+    border:1px solid rgba(113,92,185,.36);
+    border-radius:8px;
+    box-shadow:0 8px 24px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.025);
+  }
+  .card::before{
+    content:"";position:absolute;left:0;top:10px;bottom:10px;width:2px;
+    background:linear-gradient(180deg,var(--red),var(--purple),var(--cyan));
+    box-shadow:0 0 12px rgba(255,49,93,.45);
+    border-radius:2px;
+  }
+  .card:active{transform:scale(.992);}
+
+  .circuit-line::before{
+    background-image:
+      linear-gradient(90deg, transparent 96%, rgba(66,217,255,.12) 96%, rgba(66,217,255,.12) 100%),
+      linear-gradient(0deg, transparent 94%, rgba(255,49,93,.08) 94%, rgba(255,49,93,.08) 100%);
+    background-size:54px 54px;
+    opacity:.65;
+  }
+
+  .btn-primary,.btn-save{
+    position:relative;
+    overflow:hidden;
+    background:linear-gradient(100deg,#19c9f1 0%,#7656ff 50%,#ff315d 100%);
+    color:white;
+    border:1px solid rgba(255,255,255,.16);
+    box-shadow:0 7px 20px rgba(64,41,170,.28),0 0 22px rgba(255,49,93,.12);
+    text-shadow:0 1px 3px rgba(0,0,0,.35);
+  }
+  .btn-primary::after,.btn-save::after{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(115deg,transparent 25%,rgba(255,255,255,.20) 48%,transparent 70%);
+    transform:translateX(-130%);transition:transform .45s ease;
+  }
+  .btn-primary:hover::after,.btn-save:hover::after{transform:translateX(130%);}
+  .btn-primary:active,.btn-save:active{filter:brightness(.88);transform:translateY(1px);}
+  .btn-save:disabled{background:#24243c;color:#777a95;border-color:#34354d;box-shadow:none;}
+
+  input[type=text],input[type=password],input[type=number],select{
+    background:rgba(2,4,20,.82);
+    border:1px solid rgba(89,115,173,.46);
+    color:#fff;
+    border-radius:7px;
+    box-shadow:inset 0 1px 8px rgba(0,0,0,.24);
+  }
+  input[type=text]:focus,input[type=password]:focus,input[type=number]:focus,select:focus{
+    outline:none;
+    border-color:var(--cyan);
+    box-shadow:0 0 0 2px rgba(66,217,255,.12),0 0 18px rgba(66,217,255,.10);
+  }
+  input[type=range]{height:8px;background:linear-gradient(90deg,rgba(255,49,93,.32),rgba(150,88,255,.32),rgba(66,217,255,.32));border:1px solid rgba(103,105,170,.28);}
+  input[type=range]::-webkit-slider-thumb{
+    width:28px;height:28px;background:#fff;border:4px solid #12132b;
+    box-shadow:0 0 0 2px var(--cyan),0 0 18px rgba(66,217,255,.65);
+  }
+
+  .sidebar{
+    width:292px;
+    background:linear-gradient(180deg,rgba(4,4,20,.985),rgba(8,6,30,.985));
+    border-right:1px solid rgba(73,210,255,.27);
+    box-shadow:18px 0 55px rgba(0,0,0,.55),2px 0 0 rgba(255,45,88,.25);
+  }
+  .sidebar::after{
+    content:"";position:absolute;top:0;right:-1px;width:2px;height:100%;
+    background:linear-gradient(180deg,var(--red),var(--purple) 48%,var(--cyan));
+    opacity:.7;box-shadow:0 0 16px rgba(135,80,255,.45);
+  }
+  .sidebar-item{
+    border:1px solid transparent;
+    border-radius:7px;
+    color:#cdd1e2;
+    text-transform:uppercase;
+    font-size:.82rem;
+    letter-spacing:.045em;
+  }
+  .sidebar-item:hover,.sidebar-item.active{
+    background:linear-gradient(90deg,rgba(255,45,88,.11),rgba(101,69,255,.12),rgba(66,217,255,.08));
+    color:#fff;
+    border-color:rgba(66,217,255,.23);
+    box-shadow:inset 3px 0 0 var(--red),0 0 20px rgba(66,217,255,.05);
+  }
+  .hamburger-btn{
+    border:1px solid rgba(66,217,255,.38);
+    color:#fff;
+    border-radius:7px;
+    background:linear-gradient(145deg,rgba(255,49,93,.08),rgba(66,217,255,.08));
+    box-shadow:0 0 16px rgba(66,217,255,.08);
+  }
+
+  .brand-logo{display:block;object-fit:contain;filter:drop-shadow(0 0 12px rgba(255,255,255,.08));}
+  .brand-logo-login{width:min(240px,66vw);margin:0 auto 14px;}
+  .brand-logo-sidebar{width:150px;max-height:94px;object-position:left center;}
+  .brand-logo-header{width:118px;max-height:56px;object-position:left center;}
+  .brand-lockup{display:flex;align-items:center;gap:12px;min-width:0;}
+  .brand-copy{min-width:0;}
+  .brand-kicker{font-size:.64rem;letter-spacing:.19em;text-transform:uppercase;color:#8e96b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .brand-title{font-family:'Arial Narrow','Arial Black',sans-serif;font-size:.96rem;font-weight:900;letter-spacing:.10em;text-transform:uppercase;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+  .poster-login{position:relative;padding:28px 0 38px;}
+  .poster-login::before{
+    content:"";position:absolute;left:50%;top:4%;width:min(560px,100vw);height:340px;transform:translateX(-50%);pointer-events:none;
+    background:radial-gradient(ellipse at center,rgba(108,42,255,.18),transparent 55%);
+    filter:blur(12px);
+  }
+  .poster-login-card{position:relative;border-top:1px solid rgba(255,49,93,.52);border-bottom:1px solid rgba(66,217,255,.35);}
+  .poster-login-card::before,.poster-login-card::after{
+    content:"";position:absolute;height:2px;top:-1px;width:29%;
+  }
+  .poster-login-card::before{left:0;background:var(--red);box-shadow:0 0 12px var(--red);}
+  .poster-login-card::after{right:0;background:var(--cyan);box-shadow:0 0 12px var(--cyan);}
+
+  .poster-wave{
+    height:34px;width:100%;margin:9px auto 15px;opacity:.82;
+    background:
+      linear-gradient(90deg,var(--red),#ed226d 26%,var(--purple) 55%,var(--cyan) 100%);
+    -webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='700' height='60' viewBox='0 0 700 60'%3E%3Cpath d='M0 30 L10 30 16 26 22 34 30 30 38 18 44 42 50 30 58 28 64 32 72 30 80 8 86 52 92 30 100 24 106 36 114 30 122 20 128 40 136 30 144 29 150 31 158 30 166 14 172 46 178 30 186 26 192 34 200 30 208 22 214 38 222 30 230 12 236 48 242 30 250 28 256 32 264 30 272 17 278 43 286 30 294 25 300 35 308 30 316 6 322 54 328 30 336 27 342 33 350 30 358 19 364 41 372 30 380 10 386 50 392 30 400 23 406 37 414 30 422 28 428 32 436 30 444 15 450 45 458 30 466 26 472 34 480 30 488 4 494 56 500 30 508 21 514 39 522 30 530 27 536 33 544 30 552 13 558 47 566 30 574 24 580 36 588 30 596 18 602 42 610 30 618 7 624 53 632 30 640 26 646 34 654 30 662 22 668 38 676 30 684 29 690 31 700 30' fill='none' stroke='black' stroke-width='4'/%3E%3C/svg%3E");
+    mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='700' height='60' viewBox='0 0 700 60'%3E%3Cpath d='M0 30 L10 30 16 26 22 34 30 30 38 18 44 42 50 30 58 28 64 32 72 30 80 8 86 52 92 30 100 24 106 36 114 30 122 20 128 40 136 30 144 29 150 31 158 30 166 14 172 46 178 30 186 26 192 34 200 30 208 22 214 38 222 30 230 12 236 48 242 30 250 28 256 32 264 30 272 17 278 43 286 30 294 25 300 35 308 30 316 6 322 54 328 30 336 27 342 33 350 30 358 19 364 41 372 30 380 10 386 50 392 30 400 23 406 37 414 30 422 28 428 32 436 30 444 15 450 45 458 30 466 26 472 34 480 30 488 4 494 56 500 30 508 21 514 39 522 30 530 27 536 33 544 30 552 13 558 47 566 30 574 24 580 36 588 30 596 18 602 42 610 30 618 7 624 53 632 30 640 26 646 34 654 30 662 22 668 38 676 30 684 29 690 31 700 30' fill='none' stroke='black' stroke-width='4'/%3E%3C/svg%3E");
+    -webkit-mask-size:100% 100%;mask-size:100% 100%;
+    -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+  }
+  .poster-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:.64rem;letter-spacing:.20em;text-transform:uppercase;color:#c2c6dc;}
+  .poster-eyebrow::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 10px var(--red);}
+  .poster-section-title{font-family:'Arial Narrow','Arial Black',sans-serif;text-transform:uppercase;letter-spacing:.075em;color:#fff;}
+
+  header.panel{
+    position:sticky;top:0;z-index:50;
+    margin:0 0 14px!important;
+    padding:10px 14px!important;
+    border-radius:0;
+    border-left:0;border-right:0;border-top:0;
+    background:rgba(4,4,19,.91);
+    backdrop-filter:blur(18px);
+    -webkit-backdrop-filter:blur(18px);
+    box-shadow:0 8px 26px rgba(0,0,0,.34),0 1px 0 rgba(66,217,255,.16);
+  }
+  header.panel::after{
+    content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;
+    background:linear-gradient(90deg,var(--red),transparent 24%,var(--purple) 54%,transparent 75%,var(--cyan));
+    box-shadow:0 0 12px rgba(98,91,255,.35);
+  }
+
+  .badge-wait{
+    background:rgba(112,76,255,.10);color:#d6d1ff;border:1px solid rgba(139,106,255,.42);
+  }
+  .badge-done{
+    background:rgba(48,211,185,.10);color:#8df8df;border:1px solid rgba(65,228,182,.40);
+  }
+  .toast{background:#090b23;border-color:rgba(66,217,255,.42);color:#fff;box-shadow:0 12px 34px rgba(0,0,0,.55),0 0 24px rgba(66,217,255,.12);}
+  .live-dot{background:var(--red);box-shadow:0 0 10px var(--red);}
+  .gear-ring{border-color:var(--cyan);}
+  .gear-ring::after{border-color:rgba(255,49,93,.42);}
+
+  table{width:100%;}
+  th{
+    color:#fff;
+    background:rgba(85,54,180,.13);
+    text-transform:uppercase;
+    letter-spacing:.055em;
+    font-size:.72rem;
+  }
+  th,td{border-bottom:1px solid rgba(104,111,169,.22);}
+  tr:hover td{background:rgba(66,217,255,.025);}
+
+  /* Existing utility color classes remapped to the poster palette. */
+  .text-cyan-300{color:var(--cyan);}
+  .text-amber-300{color:#ff5a70;}
+  .text-red-400{color:#ff5a78;}
+  .text-slate-300{color:#d7daea;}
+  .text-slate-400{color:#9ba3c1;}
+  .text-slate-500{color:#747c9e;}
+
+  #stageLabel{
+    display:inline-flex;align-items:center;min-height:36px;padding:7px 12px;
+    border:1px solid rgba(255,49,93,.28);border-radius:6px;
+    background:linear-gradient(90deg,rgba(255,49,93,.08),rgba(107,65,255,.08));
+    color:#fff!important;font-size:.92rem;
+  }
+  #cardsWrap{max-width:980px;margin-left:auto!important;margin-right:auto!important;}
+  #adminContent{max-width:1180px;margin-left:auto!important;margin-right:auto!important;padding-bottom:24px;}
+
+  @media (max-width:639px){
+    .brand-logo-header{width:92px;max-height:48px;}
+    .brand-copy .brand-kicker{display:none;}
+    .brand-title{font-size:.72rem;letter-spacing:.07em;}
+    header.panel{padding:8px 10px!important;}
+    .poster-login{padding-top:18px;}
+    .poster-login-card{border-radius:9px;}
+    .panel{border-radius:9px;}
+    .card{border-radius:7px;}
+  }
+
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- ============ CONFIG ============ -->
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwA5x4wiobmq9JH60SFJP06WC4WU9PNcG3foNjqY50ZV95k9Wwkl5rOL6niA1QW6dv9sg/exec"; 
+const POLL_INTERVAL_MS = 6000;
+const BRAND_LOGO_DATA = "data:image/png;base64,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";
+const CRITERIA = [
+  {key:"TeknikVocal", label:"Teknik Vocal"},
+  {key:"Penghayatan", label:"Penghayatan"},
+  {key:"Improvisasi", label:"Improvisasi"},
+  {key:"StageAct", label:"Stage Act"},
+  {key:"Kostum", label:"Kostum"},
+];
+// JURI_LIST diisi DINAMIS dari sheet Users (lewat cfg.juriList / getAdminConfig
+// & getTrendInit), bukan di-hardcode -- supaya filter "Hanya Juri X" di menu
+// Rekap & Trend selalu cocok dengan username juri yang sesungguhnya dipakai
+// login, apapun namanya (bukan cuma "Juri 1/2/3" contoh dari setup awal).
+let JURI_LIST = [];
+// PENTING: daftar ini harus PERSIS SAMA dengan array STAGES di backend (.gs).
+// Sebelumnya frontend memakai STAGES tanpa pernah mendefinisikannya sendiri
+// (mengandalkan cfg.stages dari server yang ternyata tidak selalu dipakai di
+// semua tempat) -- itu penyebab error "STAGES is not defined" saat membuka
+// menu Setting Babak / Trend.
+const STAGES = [
+  "TOP30 Live Elimination 1","TOP22 Live Elimination 2: Battle 1 vs 1","TOP18","TOP15","TOP13",
+  "TOP12","TOP11","TOP10","TOP9","TOP8","TOP6","TOP5: Grand Final"
+];
+</script>
+
+<div id="app"></div>
+
+<script>
+
+
+
+
+// ---------------- SAFE STORAGE ----------------
+// Beberapa lingkungan (iframe sandbox, webview, mode privat) memblokir akses
+// localStorage dan melempar error yang tidak tertangkap. Jika ini terjadi pada
+// baris teratas skrip, SELURUH skrip berhenti sebelum sempat memanggil render(),
+// sehingga halaman tampak kosong. Bungkus semua akses agar aplikasi tetap jalan.
+const safeStorage = {
+  get(key) {
+    try { return localStorage.getItem(key); } catch (e) { return null; }
+  },
+  set(key, value) {
+    try { localStorage.setItem(key, value); } catch (e) { /* abaikan, tidak fatal */ }
+  },
+  remove(key) {
+    try { localStorage.removeItem(key); } catch (e) { /* abaikan, tidak fatal */ }
+  }
+};
+
+// ---------------- STATE ----------------
+// Ambil state dari cache jika ada, agar langsung login & tampil seketika
+
+let isSidebarOpen = false;
+let adminTab = "setting"; // Tab default panel admin (sebelumnya tidak dideklarasikan -> ReferenceError saat login admin)
+let cachedState = {};
+try {
+  cachedState = JSON.parse(safeStorage.get("perwira_state")) || {};
+} catch (e) {
+  cachedState = {};
+}
+
+// Sesi versi lama (sebelum token backend) sengaja tidak dipakai lagi agar
+// setelah update ini semua user login ulang satu kali dan mendapat token role.
+const cachedUserWithToken = (cachedState.user && cachedState.user.token) ? cachedState.user : null;
+if (cachedState.user && !cachedState.user.token) {
+  // Hapus cache legacy yang mungkin masih menyimpan total dari versi lama.
+  safeStorage.remove("perwira_state");
+  cachedState = {};
+}
+
+let state = {
+  user: cachedUserWithToken,
+  stage: cachedState.stage || null,
+  weights: cachedState.weights || {},
+  participants: cachedState.participants || [],
+  myScores: {},          
+  pollTimer: null,
+  scoringTarget: null,   
+  sliderValues: {},
+  recap: [],
+  trendData: null,
+  _juriLoadedOnce: !!cachedState.stage, // Jika sudah ada cache, tandai sudah ter-load
+  _juriFetchInFlight: false,
+  _lastJuriHash: null
+};
+
+// ---------------- HELPER LAINNYA...
+
+// ---------------- HELPER UTILS ----------------
+function shuffleArray(array) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function toggleSidebar() {
+  isSidebarOpen = !isSidebarOpen;
+  const sb = document.getElementById("sidebar");
+  const overlay = document.getElementById("sidebarOverlay");
+  if (sb) sb.classList.toggle("open", isSidebarOpen);
+  if (overlay) overlay.classList.toggle("open", isSidebarOpen);
+}
+
+function closeSidebar() {
+  isSidebarOpen = false;
+  const sb = document.getElementById("sidebar");
+  const overlay = document.getElementById("sidebarOverlay");
+  if (sb) sb.classList.remove("open");
+  if (overlay) overlay.classList.remove("open");
+}
+
+function selectAdminTab(tab) {
+  adminTab = tab;
+  closeSidebar();
+  render();
+}
+
+// ---------------- API HELPER ----------------
+async function api(action, params = {}, opts = {}) {
+  // Semua request selain login membawa token sesi. Ini mencegah akun Juri
+  // memanggil endpoint Admin (rekap/trend/config) secara langsung dari browser.
+  const requestParams = { ...params };
+  if (action !== "login" && state.user?.token) requestParams.token = state.user.token;
+  const payload = encodeURIComponent(JSON.stringify(requestParams));
+  const url = `${SCRIPT_URL}?action=${action}&payload=${payload}`;
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || "Unknown error");
+    return data.result;
+  } catch (err) {
+    console.error("API error:", err);
+    if (!opts.silent) showToast("Gagal terhubung ke server: " + err.message, true);
+    throw err;
+  }
+}
+
+function showToast(msg, isError = false) {
+  let t = document.getElementById("toast");
+  if (!t) {
+    t = document.createElement("div");
+    t.id = "toast";
+    t.className = "toast";
+    document.body.appendChild(t);
+  }
+  t.style.borderColor = isError ? "rgba(255,49,93,.58)" : "rgba(66,217,255,.48)";
+  t.style.color = isError ? "#ff7087" : "#eafbff";
+  t.style.background = isError ? "#210713" : "#080a22";
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove("show"), 2600);
+}
+
+// ---------------- GLOBAL SIDEBAR COMPONENT ----------------
+function renderSidebar() {
+  return `
+  <div id="sidebarOverlay" class="sidebar-overlay ${isSidebarOpen ? 'open' : ''}" onclick="closeSidebar()"></div>
+  <aside id="sidebar" class="sidebar ${isSidebarOpen ? 'open' : ''}">
+    <div class="p-4 border-b border-line flex justify-between items-center circuit-line">
+      <div class="brand-lockup">
+        <img class="brand-logo brand-logo-sidebar" src="${BRAND_LOGO_DATA}" alt="Perwira Idol Season 2">
+      </div>
+      <button onclick="closeSidebar()" class="text-slate-400 text-xl px-2 border-0 bg-transparent" style="cursor:pointer;">✕</button>
+    </div>
+    
+    <div class="p-3 text-xs mono text-cyan-300 bg-slate-900/80 mx-3 mt-3 rounded-lg border border-slate-800">
+      👤 Login: <b>${state.user?.username || '-'}</b> (${state.user?.role || '-'})
+    </div>
+
+    <div class="flex-1 py-4 space-y-1 overflow-y-auto">
+      ${state.user?.role === 'Admin' ? `
+        <div class="sidebar-item ${adminTab==='setting'?'active':''}" onclick="selectAdminTab('setting')">
+          <span>⚙️</span> Setting Babak
+        </div>
+        <div class="sidebar-item ${adminTab==='spinner'?'active':''}" onclick="selectAdminTab('spinner')">
+          <span>🎡</span> Spinner Wheel Undian
+        </div>
+        <div class="sidebar-item ${adminTab==='rekap'?'active':''}" onclick="selectAdminTab('rekap')">
+          <span>📊</span> Rekap Nilai Total
+        </div>
+        <div class="sidebar-item ${adminTab==='trend'?'active':''}" onclick="selectAdminTab('trend')">
+          <span>📈</span> Trend Performa
+        </div>
+      ` : `
+        <div class="sidebar-item active" onclick="closeSidebar()">
+          <span>📋</span> Daftar Peserta Juri
+        </div>
+      `}
+    </div>
+
+    <div class="p-4 border-t border-line">
+      <button onclick="logout()" class="w-full py-2.5 rounded-xl border border-red-500/40 text-red-400 font-bold text-sm hover:bg-red-500/10 transition-colors" style="background:transparent;cursor:pointer;">
+        🚪 KELUAR / LOGOUT
+      </button>
+    </div>
+  </aside>`;
+}
+
+// ---------------- RENDER ROOT ----------------
+function render() {
+  const app = document.getElementById("app");
+  if (!state.user) {
+    app.innerHTML = renderLogin();
+    bindLogin();
+    return;
+  }
+  if (state.user.role === "Admin") {
+    app.innerHTML = renderSidebar() + renderAdminShell();
+    bindAdminShell();
+  } else {
+    app.innerHTML = renderSidebar() + renderJuriShell();
+    bindJuriShell();
+    startPolling();
+  }
+}
+
+// ================= LOGIN =================
+function renderLogin() {
+  return `
+  <div class="min-h-screen flex items-center justify-center px-5 poster-login">
+    <div class="w-full max-w-sm relative">
+      <div class="text-center mb-4">
+        <img class="brand-logo brand-logo-login" src="${BRAND_LOGO_DATA}" alt="Perwira Idol Season 2">
+        <div class="poster-eyebrow">LIVE JUDGING SYSTEM</div>
+        <div class="poster-wave" aria-hidden="true"></div>
+      </div>
+      <div class="panel p-6 circuit-line poster-login-card">
+        <div class="text-center mb-6">
+          <div class="poster-section-title text-xl">Panel Penilaian</div>
+          <div class="text-xs text-slate-400 mt-2">Masuk sebagai Juri atau Administrator</div>
+        </div>
+        <label class="block text-sm mb-1 text-slate-400">Username</label>
+        <input id="loginUser" type="text" class="w-full mb-4 text-lg" placeholder="Juri / Admin" autocomplete="username">
+        <label class="block text-sm mb-1 text-slate-400">Password</label>
+        <input id="loginPass" type="password" class="w-full mb-6 text-lg" placeholder="••••••••" autocomplete="current-password">
+        <button id="btnLogin" class="btn-primary w-full py-4 rounded-xl text-lg">MASUK KE PANEL</button>
+        <p id="loginError" class="text-red-400 text-sm mt-3 hidden"></p>
+      </div>
+      <div class="text-center text-xs text-slate-500 mt-4" style="letter-spacing:.08em;">PERWIRA IDOL • SEASON 2</div>
+    </div>
+  </div>`;
+}
+
+function bindLogin() {
+  document.getElementById("btnLogin").onclick = async () => {
+    const username = document.getElementById("loginUser").value.trim();
+    const password = document.getElementById("loginPass").value;
+    const btn = document.getElementById("btnLogin");
+    const errEl = document.getElementById("loginError");
+    
+    errEl.classList.add("hidden");
+    if (!username || !password) return;
+
+    // UI Feedback: Ubah tombol saat proses
+    const originalText = btn.textContent;
+    btn.textContent = "MEMUAT...";
+    btn.disabled = true;
+    btn.style.opacity = "0.7";
+
+    // Potongan kode di dalam fungsi bindLogin() bagian try-catch
+try {
+  const result = await api("login", { username, password });
+  if (result && result.success) {
+    state.user = { username: result.username, role: result.role, token: result.token || null };
+    
+    // TANGKAP DATA GABUNGAN: Jika Juri dan data sudah dilampirkan dari backend
+    if (result.role === "Juri" && result.stage) {
+      state.stage = result.stage;
+      state.weights = result.weights || {};
+      state.participants = result.participants || [];
+      state._juriLoadedOnce = true; // Tandai bahwa data sudah termuat
+    }
+    
+    // Simpan seluruh state ke local storage
+    safeStorage.set("perwira_state", JSON.stringify({
+      user: state.user,
+      stage: state.stage,
+      weights: state.weights,
+      participants: state.participants
+    }));
+    
+    render();
+  } else {
+    errEl.textContent = "Username atau password salah.";
+    errEl.classList.remove("hidden");
+    btn.textContent = originalText;
+    btn.disabled = false;
+    btn.style.opacity = "1";
+  }
+} catch (e) {
+  errEl.textContent = "Tidak bisa terhubung ke server.";
+  errEl.classList.remove("hidden");
+  btn.textContent = originalText;
+  btn.disabled = false;
+  btn.style.opacity = "1";
+}
+  };
+}
+
+// ================= JURI SHELL =================
+function renderJuriShell() {
+  return `
+  <div class="min-h-screen pb-10">
+    <header class="panel m-3 p-3 circuit-line flex items-center justify-between">
+      <div class="brand-lockup">
+        <button onclick="toggleSidebar()" class="hamburger-btn" title="Buka Sidebar Menu">☰</button>
+        <img class="brand-logo brand-logo-header" src="${BRAND_LOGO_DATA}" alt="Perwira Idol Season 2">
+        <div class="brand-copy">
+          <div class="brand-kicker">Live Judging System</div>
+          <div class="brand-title">${escapeHtml(state.user.username)}</div>
+        </div>
+      </div>
+      <div class="text-xs text-cyan-300 font-bold px-2.5 py-1 rounded-full" style="background:rgba(66,217,255,.08);border:1px solid rgba(66,217,255,.35);">JURI</div>
+    </header>
+    <div class="mx-3 mb-3 flex items-center gap-2">
+      <span class="live-dot"></span>
+      <span id="stageLabel" class="font-display text-lg text-amber-300">Memuat babak...</span>
+    </div>
+    <div id="cardsWrap" class="mx-3 grid grid-cols-1 gap-3"></div>
+  </div>
+  <div id="modalWrap"></div>
+  `;
+}
+
+function bindJuriShell() {
+  refreshJuriData();
+}
+
+function logout() {
+  closeSidebar();
+  stopPolling();
+  safeStorage.remove("perwira_state"); // Hapus sesi
+  state.user = null;
+  state.stage = null;
+  state.participants = [];
+  state._juriLoadedOnce = false;
+  state._juriFetchInFlight = false;
+  state._lastJuriHash = null;
+  window._spinnerState = null;
+  window._spinnerCfgCache = null;
+  window._settingCfgCache = null;
+  window._rekapCache = null;
+  window._rekapJuriFilter = "";
+  
+window._trendInitCache = null;
+  window._adjustmentStage = "";
+  window._adjustmentJuriFilter = "";
+  JURI_LIST = [];
+  render();
+}
+
+// ---- ADMIN: KOREKSI NILAI (TRANSPARAN + AUDIT TRAIL) ----
+window._adjustmentStage = "";
+window._adjustmentJuriFilter = "";
+
+async function renderAdminAdjustments(content) {
+  await ensureJuriList();
+  let activeStage = STAGES[0];
+  try {
+    const cfg = window._settingCfgCache || await api("getAdminConfig", {}, { silent: true });
+    activeStage = cfg.activeStage || activeStage;
+  } catch (e) {}
+
+  const stage = window._adjustmentStage || activeStage;
+  const juri = window._adjustmentJuriFilter || "";
+  content.innerHTML = `<div class="text-slate-400 p-6 text-center">Memuat koreksi nilai...</div>`;
+
+  try {
+    const data = await api("getAdminScoreAdjustments", { stage, juri });
+    paintAdminAdjustments(content, data);
+  } catch (e) {
+    content.innerHTML = `<div class="text-red-400 p-6 text-center">Gagal memuat data koreksi nilai.</div>`;
+  }
+}
+
+function paintAdminAdjustments(content, data) {
+  const rows = data.rows || [];
+  const stage = data.stage || window._adjustmentStage || STAGES[0];
+  const juri = window._adjustmentJuriFilter || "";
+
+  content.innerHTML = `
+    <div class="panel p-4 circuit-line">
+      <div class="mb-4">
+        <h2 class="font-display text-lg text-amber-300">Koreksi Nilai</h2>
+        <p class="text-xs text-slate-400 mt-1">Pengaturan koreksi nilai khusus Admin. Nilai asli juri tetap disimpan dan setiap perubahan dicatat beserta alasan, waktu, dan akun Admin. Rekap menggunakan Total Efektif.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Babak</label>
+          <select id="selAdjStage" class="w-full text-sm">
+            ${STAGES.map(s => `<option value="${escapeAttr(s)}" ${s===stage?'selected':''}>${escapeHtml(s)}</option>`).join("")}
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Juri</label>
+          <select id="selAdjJuri" class="w-full text-sm">
+            <option value="" ${juri===''?'selected':''}>Semua Juri</option>
+            ${JURI_LIST.map(j => `<option value="${escapeAttr(j)}" ${juri===j?'selected':''}>${escapeHtml(j)}</option>`).join("")}
+          </select>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm" style="min-width:980px;">
+          <thead>
+            <tr class="text-slate-400 text-left">
+              <th class="py-2 pr-2">Juri</th>
+              <th class="py-2 pr-2">No</th>
+              <th class="py-2 pr-2">Peserta</th>
+              <th class="py-2 pr-2 text-right">Nilai Asli</th>
+              <th class="py-2 pr-2">Koreksi Admin</th>
+              <th class="py-2 pr-2 text-right">Total Efektif</th>
+              <th class="py-2 pr-2">Alasan Audit</th>
+              <th class="py-2 pr-2">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.length ? rows.map((r,i) => `
+              <tr>
+                <td class="py-2 pr-2">${escapeHtml(r.juri)}</td>
+                <td class="py-2 pr-2">${r.nomorUrut}</td>
+                <td class="py-2 pr-2">
+                  <div class="font-semibold">${escapeHtml(r.nama)}</div>
+                  <div class="text-xs text-slate-400">${escapeHtml(r.lagu || '')}</div>
+                  ${r.updatedBy ? `<div class="text-xs text-slate-500 mt-1">Terakhir: ${escapeHtml(r.updatedBy)}${r.updatedAt ? ' • '+escapeHtml(formatAdjustmentTime(r.updatedAt)) : ''}</div>` : ''}
+                </td>
+                <td class="py-2 pr-2 text-right font-display">${Number(r.originalTotal || 0).toFixed(2)}</td>
+                <td class="py-2 pr-2" style="min-width:130px;">
+                  <input id="adjVal-${i}" type="number" min="0" max="100" step="0.01" class="w-full" value="${r.adjustedTotal !== null && r.adjustedTotal !== undefined ? Number(r.adjustedTotal).toFixed(2) : ''}" placeholder="0–100">
+                </td>
+                <td class="py-2 pr-2 text-right font-display text-amber-300" id="effVal-${i}">${Number(r.effectiveTotal || 0).toFixed(2)}</td>
+                <td class="py-2 pr-2" style="min-width:240px;">
+                  <input id="adjReason-${i}" type="text" class="w-full" value="${escapeAttr(r.reason || '')}" placeholder="Wajib: alasan koreksi/reset">
+                </td>
+                <td class="py-2 pr-2" style="min-width:180px;">
+                  <div class="flex gap-2">
+                    <button class="btn-primary px-3 py-2 rounded-lg text-xs btnAdjSave" data-i="${i}">SIMPAN</button>
+                    <button class="px-3 py-2 rounded-lg text-xs btnAdjReset" data-i="${i}" style="background:transparent;border:1px solid #475569;color:#cbd5e1;cursor:pointer;">RESET</button>
+                  </div>
+                </td>
+              </tr>
+            `).join("") : `<tr><td colspan="8" class="py-6 text-center text-slate-400">Belum ada nilai juri pada filter ini.</td></tr>`}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+  document.getElementById("selAdjStage").onchange = e => {
+    window._adjustmentStage = e.target.value;
+    renderAdminAdjustments(content);
+  };
+  document.getElementById("selAdjJuri").onchange = e => {
+    window._adjustmentJuriFilter = e.target.value;
+    renderAdminAdjustments(content);
+  };
+
+  rows.forEach((r,i) => {
+    const valEl = document.getElementById(`adjVal-${i}`);
+    const effEl = document.getElementById(`effVal-${i}`);
+    if (valEl && effEl) {
+      valEl.oninput = () => {
+        const raw = valEl.value.trim();
+        const n = raw === '' ? Number(r.originalTotal || 0) : Number(raw);
+        effEl.textContent = Number.isFinite(n) ? n.toFixed(2) : Number(r.originalTotal || 0).toFixed(2);
+      };
+    }
+  });
+
+  content.querySelectorAll('.btnAdjSave').forEach(btn => {
+    btn.onclick = async () => {
+      const i = Number(btn.dataset.i);
+      const r = rows[i];
+      const adjustedRaw = document.getElementById(`adjVal-${i}`).value.trim();
+      const reason = document.getElementById(`adjReason-${i}`).value.trim();
+      if (adjustedRaw === '') { showToast('Isi nilai koreksi 0–100, atau gunakan RESET.', true); return; }
+      if (!reason) { showToast('Alasan koreksi wajib diisi.', true); return; }
+      const adjustedTotal = Number(adjustedRaw);
+      if (!Number.isFinite(adjustedTotal) || adjustedTotal < 0 || adjustedTotal > 100) { showToast('Nilai koreksi harus 0–100.', true); return; }
+      btn.disabled = true;
+      try {
+        await api('setAdminScoreAdjustment', {
+          stage, juri: r.juri, nomorUrut: r.nomorUrut,
+          adjustedTotal, reason, clear: false
+        });
+        window._rekapCache = null;
+        window._trendInitCache = null;
+        showToast('Koreksi nilai disimpan dan dicatat pada audit trail.');
+        renderAdminAdjustments(content);
+      } catch (e) {
+        btn.disabled = false;
+      }
+    };
+  });
+
+  content.querySelectorAll('.btnAdjReset').forEach(btn => {
+    btn.onclick = async () => {
+      const i = Number(btn.dataset.i);
+      const r = rows[i];
+      const reason = document.getElementById(`adjReason-${i}`).value.trim();
+      if (!reason) { showToast('Isi alasan reset untuk audit trail.', true); return; }
+      btn.disabled = true;
+      try {
+        await api('setAdminScoreAdjustment', {
+          stage, juri: r.juri, nomorUrut: r.nomorUrut,
+          reason, clear: true
+        });
+        window._rekapCache = null;
+        window._trendInitCache = null;
+        showToast('Koreksi direset ke nilai asli juri.');
+        renderAdminAdjustments(content);
+      } catch (e) {
+        btn.disabled = false;
+      }
+    };
+  });
+}
+
+function formatAdjustmentTime(value) {
+  try {
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return String(value || '');
+    return d.toLocaleString('id-ID', { dateStyle:'short', timeStyle:'short' });
+  } catch (e) { return String(value || ''); }
+}
+
+
+async function refreshJuriData() {
+  if (state._juriFetchInFlight) return;
+  state._juriFetchInFlight = true;
+  const isBackgroundPoll = state._juriLoadedOnce === true;
+  try {
+    const result = await api("getJuriState", {}, { silent: isBackgroundPoll });
+    state._juriLoadedOnce = true;
+    state.stage = result.stage;
+
+    // PRIVACY JURI: backend tidak lagi mengirim bobot maupun total. Frontend juga
+    // hanya menyimpan status penilaian + nilai per kriteria untuk kebutuhan edit.
+    state.weights = {};
+    state.participants = (result.participants || []).map(np => ({
+      nomorUrut: np.nomorUrut,
+      nama: np.nama,
+      lagu: np.lagu,
+      grupAsli: np.grupAsli,
+      sudahDinilai: np.sudahDinilai === true || np.sudahDinilai === "true" || np.sudahDinilai === 1,
+      scores: np.scores || null
+    }));
+
+    // Cache lokal sengaja tidak menyimpan total/bobot untuk akun Juri.
+    safeStorage.set("perwira_state", JSON.stringify({
+      user: state.user,
+      stage: state.stage,
+      weights: {},
+      participants: state.participants
+    }));
+
+    const newHash = JSON.stringify({ stage: state.stage, participants: state.participants });
+    if (newHash !== state._lastJuriHash) {
+      state._lastJuriHash = newHash;
+      renderCards();
+    }
+  } catch (e) {
+    // Abaikan polling background agar UI tidak berkedip; error request manual
+    // tetap ditangani oleh api().
+  } finally {
+    state._juriFetchInFlight = false;
+  }
+}
+
+// Deteksi babak Battle TOP22 memakai logika yang sama seperti Spinner Admin
+// (lihat isTOP22 di renderSpinner), supaya kartu penilaian juri otomatis
+// dikelompokkan per pasangan battle pada babak ini.
+function isBattleStage(stage) {
+  const s = (stage || "").toUpperCase();
+  return s.includes("TOP22") || s.includes("BATTLE");
+}
+
+function computeCardInfo(p) {
+  const isDone = p && (p.sudahDinilai === true || p.sudahDinilai === "true" || p.sudahDinilai === 1 || p.isScored);
+  return { isDone: !!isDone };
+}
+
+function cardHtml(p) {
+  const { isDone } = computeCardInfo(p);
+
+  return `
+      <div class="card p-4 flex items-center justify-between" data-nomor="${p.nomorUrut}">
+        <div class="flex items-center gap-4">
+          <div class="font-display text-3xl text-cyan-300 w-12 text-center">${p.nomorUrut}</div>
+          <div>
+            <div class="font-bold text-lg leading-tight">${escapeHtml(p.nama)}</div>
+            <div class="text-slate-400 text-sm">${escapeHtml(p.lagu)}</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          ${isDone ? `
+            <span class="text-xs font-bold px-3 py-1-5 rounded-full" style="color:#cbd5e1;border:1px solid #475569;background:rgba(71,85,105,0.12);">NILAI TERSIMPAN</span>
+            <button class="btnEditScore text-xs font-bold px-3 py-1-5 rounded-full" data-nomor="${p.nomorUrut}" style="cursor:pointer;border:1px solid var(--cyan-dim);background:rgba(56,240,224,0.08);color:var(--cyan);" title="Edit Nilai Peserta Ini">
+              ✎ EDIT
+            </button>
+          ` : `
+            <span class="text-xs font-bold px-3 py-1-5 rounded-full badge-wait">BELUM DINILAI</span>
+          `}
+        </div>
+      </div>
+    `;
+}
+
+function renderCards() {
+  const label = document.getElementById("stageLabel");
+  if (label) label.textContent = state.stage || "Belum ada babak aktif";
+  const wrap = document.getElementById("cardsWrap");
+  if (!wrap) return;
+  if (!state.participants.length) {
+    wrap.innerHTML = `<div class="panel p-6 text-center text-slate-400">Belum ada peserta di babak ini.</div>`;
+    return;
+  }
+
+  if (isBattleStage(state.stage)) {
+    // Kelompokkan kartu berdasarkan pasangan battle: urutan NomorUrut 1&2 =
+    // Battle #1, 3&4 = Battle #2, dst — konsisten dengan cara backend/spinner
+    // admin menomori pasangan battle saat pengundian.
+    const sorted = [...state.participants].sort((a, b) => Number(a.nomorUrut) - Number(b.nomorUrut));
+    const pairs = [];
+    for (let i = 0; i < sorted.length; i += 2) {
+      pairs.push([sorted[i], sorted[i + 1]].filter(Boolean));
+    }
+    // Label "GRUP #N" diambil dari kolom "GrupAsli" di Sheets (identitas grup
+    // tetap yang dikunci backend), BUKAN dari posisi urutan tampil saat ini —
+    // supaya label grup di Panel Juri tidak ikut berubah walau NomorUrut
+    // berubah akibat hasil spin. Fallback ke posisi pasangan (idx+1) hanya
+    // kalau GrupAsli belum sempat terisi di backend.
+    wrap.innerHTML = pairs.map((pair, idx) => {
+      const rawGid = pair[0] ? pair[0].grupAsli : null;
+      const gid = (rawGid !== null && rawGid !== undefined && rawGid !== '') ? Number(rawGid) : (idx + 1);
+      return `
+      <div class="panel p-3 circuit-line" style="border-color:var(--cyan-dim);">
+        <div class="text-center mb-2">
+          <span class="font-display text-sm text-amber-300 tracking-wider">⚔️ GRUP #${gid}</span>
+        </div>
+        <div class="space-y-2">
+          ${pair.map((p, pi) => cardHtml(p)).join(
+            pair.length === 2 ? `<div class="text-center text-xs font-display text-red-400">VS</div>` : ""
+          )}
+        </div>
+      </div>
+    `;
+    }).join("");
+  } else {
+    wrap.innerHTML = state.participants.map(p => cardHtml(p)).join("");
+  }
+
+  wrap.querySelectorAll(".card").forEach(el => {
+    el.onclick = (e) => {
+      if (e.target.closest(".btnEditScore")) return; // ditangani listener tombol edit sendiri
+      const nomor = el.dataset.nomor;
+      const p = state.participants.find(x => String(x.nomorUrut) === String(nomor));
+      const { isDone } = computeCardInfo(p);
+      if (isDone) return;
+      openScoreModal(p, false);
+    };
+  });
+
+  wrap.querySelectorAll(".btnEditScore").forEach(btn => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const nomor = btn.dataset.nomor;
+      const p = state.participants.find(x => String(x.nomorUrut) === String(nomor));
+      if (p) openScoreModal(p, true);
+    };
+  });
+}
+
+function openScoreModal(p, isEdit) {
+  state.scoringTarget = p;
+  state.editMode = !!isEdit;
+  state.sliderValues = {};
+  CRITERIA.forEach(c => {
+    const prev = isEdit && p.scores ? Number(p.scores[c.key]) : NaN;
+    state.sliderValues[c.key] = !isNaN(prev) ? prev : 50;
+  });
+  const modalWrap = document.getElementById("modalWrap");
+  modalWrap.innerHTML = `
+  <div class="fixed inset-0 modal-backdrop flex items-end sm:items-center justify-center z-50" id="modalBackdrop">
+    <div class="panel w-full sm:max-w-md max-h-92vh overflow-y-auto p-5 circuit-line" style="border-radius:20px 20px 0 0;">
+      <div class="text-center mb-4">
+        ${state.editMode ? '<div class="text-xs font-bold text-amber-300 tracking-wider mb-1">✎ MODE EDIT NILAI</div>' : ''}
+        <div class="font-display text-2xl spotlight-text">#${p.nomorUrut} ${escapeHtml(p.nama)}</div>
+        <div class="text-slate-400">${escapeHtml(p.lagu)}</div>
+      </div>
+
+      <div class="text-xs text-slate-400 text-center mb-4">Nilai setiap kriteria secara independen sesuai penampilan aktual peserta.</div>
+
+      <div id="slidersWrap" class="space-y-5"></div>
+      <button id="btnSaveScore" class="btn-save w-full py-4 rounded-xl text-xl mt-6">${state.editMode ? 'SIMPAN PERUBAHAN' : 'SIMPAN NILAI'}</button>
+      <button id="btnCancelModal" class="w-full py-3 mt-2 text-slate-400 text-sm" style="background:transparent;border:none;cursor:pointer;">Batal</button>
+    </div>
+  </div>`;
+  const slidersWrap = document.getElementById("slidersWrap");
+  slidersWrap.innerHTML = CRITERIA.map(c => {
+    const v = state.sliderValues[c.key];
+    return `
+    <div>
+      <div class="flex justify-between items-baseline mb-1">
+        <label class="font-semibold">${c.label}</label>
+        <span id="val-${c.key}" class="font-display text-3xl text-amber-300">${v}</span>
+      </div>
+      <input type="range" min="0" max="100" value="${v}" id="slider-${c.key}" class="w-full">
+    </div>
+  `;
+  }).join("");
+
+  CRITERIA.forEach(c => {
+    const slider = document.getElementById(`slider-${c.key}`);
+    const val = document.getElementById(`val-${c.key}`);
+    slider.oninput = () => {
+      state.sliderValues[c.key] = Number(slider.value);
+      val.textContent = slider.value;
+    };
+  });
+
+  document.getElementById("btnCancelModal").onclick = closeModal;
+  document.getElementById("modalBackdrop").onclick = (e) => { if (e.target.id === "modalBackdrop") closeModal(); };
+  document.getElementById("btnSaveScore").onclick = submitScore;
+}
+
+function closeModal() {
+  document.getElementById("modalWrap").innerHTML = "";
+  state.scoringTarget = null;
+  state.editMode = false;
+}
+
+async function submitScore() {
+  const btn = document.getElementById("btnSaveScore");
+  const isEdit = !!state.editMode;
+  btn.disabled = true;
+  btn.textContent = isEdit ? "MENYIMPAN PERUBAHAN..." : "MENYIMPAN...";
+  const p = state.scoringTarget;
+  try {
+    await api("submitScore", {
+      juri: state.user.username,
+      stage: state.stage,
+      nomorUrut: p.nomorUrut,
+      nama: p.nama,
+      lagu: p.lagu,
+      scores: state.sliderValues,
+      isEdit: isEdit,
+    });
+    p.sudahDinilai = true;
+    p.scores = { ...state.sliderValues };
+    closeModal();
+    renderCards();
+    showToast(isEdit ? "Perubahan Nilai Berhasil Disimpan!" : "Nilai Berhasil Disimpan!");
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = isEdit ? "SIMPAN PERUBAHAN" : "SIMPAN NILAI";
+  }
+}
+
+function startPolling() {
+  stopPolling();
+  state.pollTimer = setInterval(() => {
+    if (state.user && state.user.role !== "Admin" && !state.scoringTarget) {
+      refreshJuriData();
+    }
+  }, POLL_INTERVAL_MS);
+}
+function stopPolling() {
+  if (state.pollTimer) clearInterval(state.pollTimer);
+  state.pollTimer = null;
+}
+
+// ================= ADMIN SHELL =================
+function renderAdminShell() {
+  return `
+  <div class="min-h-screen pb-16">
+    <header class="panel m-3 p-3 circuit-line flex items-center justify-between">
+      <div class="brand-lockup">
+        <button onclick="toggleSidebar()" class="hamburger-btn" title="Buka Sidebar Menu">☰</button>
+        <img class="brand-logo brand-logo-header" src="${BRAND_LOGO_DATA}" alt="Perwira Idol Season 2">
+        <div class="brand-copy">
+          <div class="brand-kicker">Control Room</div>
+          <div class="brand-title">Admin Console</div>
+        </div>
+      </div>
+      <div class="text-xs font-bold px-2.5 py-1 rounded-full" style="color:#ff6b80;background:rgba(255,49,93,.09);border:1px solid rgba(255,49,93,.38);">ADMIN</div>
+    </header>
+    <div id="adminContent" class="mx-3 mt-4"></div>
+  </div>`;
+}
+
+function bindAdminShell() {
+  renderAdminTab();
+}
+
+// Ambil daftar juri sungguhan dari server (via getAdminConfig, sudah di-cache
+// singkat di backend) sekali saja lalu simpan di JURI_LIST -- dipakai oleh
+// dropdown filter "Hanya Juri X" di menu Rekap & Trend.
+let _juriListFetchInFlight = null;
+async function ensureJuriList() {
+  if (JURI_LIST.length) return JURI_LIST;
+  if (_juriListFetchInFlight) return _juriListFetchInFlight;
+  _juriListFetchInFlight = api("getAdminConfig", {}, { silent: true })
+    .then(cfg => {
+      if (cfg && Array.isArray(cfg.juriList) && cfg.juriList.length) JURI_LIST = cfg.juriList;
+      return JURI_LIST;
+    })
+    .catch(() => JURI_LIST)
+    .finally(() => { _juriListFetchInFlight = null; });
+  return _juriListFetchInFlight;
+}
+
+// Cache config peserta khusus spinner, supaya render ulang setelah tiap
+// spin/reset/acak TIDAK perlu fetch ulang ke Google Sheets (itu yang bikin lambat).
+// Cache di-invalidate hanya saat pindah babak atau setelah simpan peserta di tab Setting.
+window._spinnerCfgCache = null;
+
+async function renderAdminTab() {
+  const content = document.getElementById("adminContent");
+  if (!content) return;
+  content.innerHTML = `<div class="text-slate-400 p-6 text-center">Memuat data menu...</div>`;
+  if (adminTab === "setting") return renderSetting(content);
+  if (adminTab === "spinner") return renderSpinner(content);
+  if (adminTab === "rekap") return renderRekap(content);
+  if (adminTab === "trend") return renderTrend(content);
+}
+
+// ---- SETTING TAB ----
+window._settingCfgCache = null;
+
+async function renderSetting(content) {
+  // Sama seperti Rekap: tampilkan cache dulu kalau ada (langsung terasa instan
+  // saat pindah balik ke tab ini), lalu diam-diam refresh dari server.
+  const hasCache = !!window._settingCfgCache;
+  let cfg;
+  if (hasCache) {
+    cfg = window._settingCfgCache;
+    paintSetting(content, cfg);
+    try {
+      const fresh = await api("getAdminConfig", {}, { silent: true });
+      window._settingCfgCache = fresh;
+      // Hanya lukis ulang diam-diam kalau tab Setting masih yang sedang aktif
+      // dan user belum mulai mengetik di form (supaya tidak menimpa input).
+      if (adminTab === "setting" && document.activeElement === document.body) {
+        paintSetting(content, fresh);
+      }
+    } catch (e) { /* pakai cache yang sudah tampil */ }
+    return;
+  }
+  cfg = await api("getAdminConfig", {});
+  window._settingCfgCache = cfg;
+  paintSetting(content, cfg);
+}
+
+function paintSetting(content, cfg) {
+  const activeStage = cfg.activeStage;
+  const weights = cfg.weights;
+  const participants = cfg.participants || [];
+
+  content.innerHTML = `
+    <div class="panel p-4 mb-3 circuit-line">
+      <h2 class="font-display text-lg text-cyan-300 mb-3">Babak Berjalan</h2>
+      <select id="selStage" class="w-full text-lg py-3">
+        ${STAGES.map(s=>`<option value="${s}" ${s===activeStage?'selected':''}>${s}</option>`).join("")}
+      </select>
+      <button id="btnSetStage" class="btn-primary w-full py-3 rounded-xl mt-3">Aktifkan Babak</button>
+    </div>
+
+    <div class="panel p-4 mb-3 circuit-line">
+      <h2 class="font-display text-lg text-amber-300 mb-3">Bobot Penilaian (%)</h2>
+      <div class="grid grid-cols-2 gap-3">
+        ${CRITERIA.map(c=>`
+          <div>
+            <label class="text-sm text-slate-400">${c.label}</label>
+            <input type="number" min="0" max="100" id="w-${c.key}" value="${weights[c.key] ?? 20}" class="w-full">
+          </div>`).join("")}
+      </div>
+      <p id="weightTotal" class="text-sm text-slate-400 mt-2"></p>
+      <button id="btnSaveWeights" class="btn-primary w-full py-3 rounded-xl mt-3">Simpan Bobot</button>
+    </div>
+
+    <div class="panel p-4 mb-3 circuit-line">
+      <h2 class="font-display text-lg text-cyan-300 mb-3">Peserta &amp; Judul Lagu (${activeStage})</h2>
+      <div id="participantRows" class="space-y-2"></div>
+      <button id="btnAddRow" class="mt-3 w-full py-2 rounded-lg border border-slate-600 text-slate-300" style="background:transparent;cursor:pointer;">+ Tambah Peserta</button>
+      <button id="btnSaveParticipants" class="btn-primary w-full py-3 rounded-xl mt-3">Simpan Peserta</button>
+    </div>
+
+    <div id="settingAdjustmentsWrap"></div>
+  `;
+
+  document.getElementById("selStage").onchange = () => {};
+  document.getElementById("btnSetStage").onclick = async () => {
+    const stage = document.getElementById("selStage").value;
+    await api("setActiveStage", { stage });
+    window._spinnerState = null;
+    window._spinnerCfgCache = null;
+    window._settingCfgCache = null;
+    window._trendInitCache = null;
+    window._rekapCache = null;
+    showToast("Babak aktif diperbarui.");
+    renderAdminTab();
+  };
+
+  function updateWeightTotal() {
+    let total = 0;
+    CRITERIA.forEach(c => total += Number(document.getElementById(`w-${c.key}`).value || 0));
+    const el = document.getElementById("weightTotal");
+    el.textContent = `Total bobot: ${total}%` + (total===100 ? " ✓" : " (harus 100%)");
+    el.style.color = total===100 ? "var(--green)" : "var(--red)";
+  }
+  CRITERIA.forEach(c => document.getElementById(`w-${c.key}`).oninput = updateWeightTotal);
+  updateWeightTotal();
+
+  document.getElementById("btnSaveWeights").onclick = async () => {
+    const w = {};
+    let total = 0;
+    CRITERIA.forEach(c => { w[c.key] = Number(document.getElementById(`w-${c.key}`).value || 0); total += w[c.key]; });
+    if (total !== 100) { showToast("Total bobot harus 100%!", true); return; }
+    await api("setWeights", { weights: w });
+    window._settingCfgCache = null;
+    showToast("Bobot penilaian disimpan.");
+  };
+
+  let rows = participants.length ? [...participants] : [{nomorUrut:1, nama:"", lagu:""}];
+  function renderRows() {
+    document.getElementById("participantRows").innerHTML = rows.map((r,i)=>`
+      <div class="flex gap-2 items-center">
+        <input type="number" class="w-16 pRowNomor" data-i="${i}" value="${r.nomorUrut}">
+        <input type="text" class="flex-1 pRowNama" data-i="${i}" placeholder="Nama Peserta" value="${escapeAttr(r.nama)}">
+        <input type="text" class="flex-1 pRowLagu" data-i="${i}" placeholder="Judul Lagu" value="${escapeAttr(r.lagu)}">
+        <button class="pRowDel text-red-400 px-2" data-i="${i}" style="background:transparent;border:none;cursor:pointer;">✕</button>
+      </div>`).join("");
+    document.querySelectorAll(".pRowNomor").forEach(el=>el.oninput=()=>rows[el.dataset.i].nomorUrut=Number(el.value));
+    document.querySelectorAll(".pRowNama").forEach(el=>el.oninput=()=>rows[el.dataset.i].nama=el.value);
+    document.querySelectorAll(".pRowLagu").forEach(el=>el.oninput=()=>rows[el.dataset.i].lagu=el.value);
+    document.querySelectorAll(".pRowDel").forEach(el=>el.onclick=()=>{rows.splice(el.dataset.i,1); renderRows();});
+  }
+  renderRows();
+  document.getElementById("btnAddRow").onclick = () => { rows.push({nomorUrut: rows.length+1, nama:"", lagu:""}); renderRows(); };
+  document.getElementById("btnSaveParticipants").onclick = async () => {
+    await api("setParticipants", { stage: activeStage, participants: rows });
+    window._spinnerState = null;
+    window._spinnerCfgCache = null;
+    window._settingCfgCache = null;
+    window._trendInitCache = null;
+    showToast("Daftar peserta disimpan.");
+  };
+
+  // Koreksi nilai ditempatkan di dalam Setting Admin, bukan sebagai menu sidebar terpisah.
+  // Nilai asli juri tetap dipertahankan; perubahan Admin tersimpan sebagai audit trail terpisah.
+  const adjustmentWrap = document.getElementById("settingAdjustmentsWrap");
+  if (adjustmentWrap) renderAdminAdjustments(adjustmentWrap);
+}
+
+// ---- SPINNER TAB ----
+async function renderSpinner(content) {
+  // Pakai cache kalau ada, biar re-render setelah spin/reset/acak nama
+  // tidak perlu hit ke Google Sheets lagi (itu penyebab lambat).
+  let cfg = window._spinnerCfgCache;
+  if (!cfg) {
+    cfg = await api("getAdminConfig", {});
+    window._spinnerCfgCache = cfg;
+  }
+  const participants = cfg.participants || [];
+
+  // Babak Battle TOP22: satu putaran roda = SATU GRUP BATTLE (isi 2 peserta
+  // sekaligus), bukan satu peserta. Roda menampilkan label "Grup #1", "Grup #2",
+  // dst — bukan nama peserta — dan setiap kali diputar, roda berhenti pada grup
+  // paling depan di antrian (urutan grup mengikuti urutan NomorUrut di Sheets,
+  // berpasangan 1&2 = Grup #1, 3&4 = Grup #2, dst). Roda murni gimmick visual;
+  // hasilnya selalu grup terdepan sesuai urutan yang sudah diatur di Sheets.
+  const isTOP22 = (cfg.activeStage || "").toUpperCase().includes("TOP22") || (cfg.activeStage || "").toUpperCase().includes("BATTLE");
+
+  // Label grup ("Grup #1","Grup #2",dst) SELALU dari kolom "GrupAsli" (identitas
+  // tetap yang dikunci sekali oleh backend, lihat readParticipants() di Apps
+  // Script) — BUKAN dari posisi/urutan NomorUrut saat ini. Ini penting supaya
+  // nama grup tidak ikut berubah walau NomorUrut berubah akibat hasil spin
+  // (urutan tampil final). Fallback ke pasangan-per-posisi hanya dipakai kalau
+  // backend belum sempat mengisi GrupAsli (mis. request masih diproses).
+  function buildGroups(list) {
+    const byId = {};
+    const ids = [];
+    list.forEach((p, idx) => {
+      const gid = (p.grupAsli !== null && p.grupAsli !== undefined && p.grupAsli !== '') ? Number(p.grupAsli) : (Math.floor(idx / 2) + 1);
+      if (!byId[gid]) { byId[gid] = []; ids.push(gid); }
+      byId[gid].push(p);
+    });
+    ids.sort((a, b) => a - b);
+    return ids.map(gid => ({ label: `Grup #${gid}`, members: byId[gid] }));
+  }
+
+  // Urutan TAMPIL di spinner dibaca dari kolom "UrutanSpin" di sheet peserta
+  // (diisi manual oleh admin, bisa di salah satu/kedua baris tiap grup).
+  // Grup dengan UrutanSpin terkecil diputar duluan. Kalau kolom itu kosong
+  // untuk suatu grup, fallback ke urutan grup apa adanya (posisi aslinya)
+  // supaya babak yang belum diisi UrutanSpin tetap berjalan seperti biasa.
+  function groupSpinOrder(group, fallbackIdx) {
+    const m1 = group.members[0], m2 = group.members[1];
+    const raw = (m1 && m1.urutanSpin !== null && m1.urutanSpin !== undefined) ? m1.urutanSpin
+              : (m2 && m2.urutanSpin !== null && m2.urutanSpin !== undefined) ? m2.urutanSpin
+              : null;
+    const num = raw === null ? NaN : Number(raw);
+    return isNaN(num) ? fallbackIdx : num;
+  }
+
+  function orderGroupsForSpin(groups) {
+    return [...groups].sort((a, b) => {
+      const idxA = groups.indexOf(a), idxB = groups.indexOf(b);
+      const orderA = groupSpinOrder(a, idxA);
+      const orderB = groupSpinOrder(b, idxB);
+      if (orderA !== orderB) return orderA - orderB;
+      return idxA - idxB; // tie-breaker: urutan asli, biar stabil
+    });
+  }
+
+  function unitLabel(unit) { return isTOP22 ? unit.label : unit.nama; }
+
+  if (!window._spinnerState || window._spinnerState.stage !== cfg.activeStage) {
+    const initialUnits = isTOP22 ? orderGroupsForSpin(buildGroups(participants)) : [...participants];
+    window._spinnerState = {
+      stage: cfg.activeStage,
+      remaining: initialUnits,
+      wheelOrder1: shuffleArray([...initialUnits]),
+      assigned: [],
+      currentAngle1: 0,
+      spinCount: 0
+    };
+  }
+
+  const spState = window._spinnerState;
+  const isFinished = spState.remaining.length === 0;
+  const nextNo = (spState.assigned || []).length + 1;
+
+  content.innerHTML = `
+    <div class="panel p-6 circuit-line text-center">
+      <h2 class="font-display text-lg text-amber-300 mb-1">${isTOP22 ? 'Spinner Battle TOP 22' : 'Spinner Undian'} — ${escapeHtml(cfg.activeStage)}</h2>
+      <p class="text-xs text-slate-400 mb-4">
+        ${isFinished ? '' : (isTOP22
+          ? `Mengundi <span class="font-bold text-cyan-300">Grup Urutan Tampil ke${nextNo}</span> (Sisa ${spState.remaining.length} Grup)`
+          : `Nomor Urut Berikutnya: <span class="font-bold text-cyan-300">#${nextNo}</span>`)}
+      </p>
+
+      <div class="relative mx-auto mb-6" style="width:320px; max-width:100%; aspect-ratio:1/1;">
+        <div class="absolute" style="right:-10px; top:50%; transform:translateY(-50%); z-index:20; filter:drop-shadow(-2px 2px 4px rgba(0,0,0,0.5));">
+          <svg width="24" height="28" viewBox="0 0 24 28" fill="none">
+            <path d="M0 14L24 0V28L0 14Z" fill="#FF3344" stroke="#800000" stroke-width="1"/>
+          </svg>
+        </div>
+        <canvas id="wheelCanvasSingle" width="400" height="400" style="width:100%; height:100%;"></canvas>
+      </div>
+
+      <div class="flex flex-wrap gap-2 justify-center max-w-sm mx-auto">
+        <button id="btnSpinSingle" class="btn-primary py-2.5 px-6 rounded-xl text-base font-bold shadow-lg flex-1" ${isFinished ? 'disabled style="opacity:0.5;"' : ''}>
+          ${isFinished ? (isTOP22 ? 'BATTLE SELESAI' : 'UNDIAN SELESAI') : (isTOP22 ? '🎲 PUTAR GRUP' : '🎲 PUTAR UNDIAN')}
+        </button>
+        <button id="btnShuffleSingle" class="px-3 py-2.5 rounded-xl border border-slate-600 text-cyan-300 text-xs font-semibold" style="background:transparent;cursor:pointer;" title="Acak Tampilan di Roda" ${spState.remaining.length <= 1 ? 'disabled style="opacity:0.5;"' : ''}>
+          🔀 Acak Tampilan
+        </button>
+        <button id="btnResetSpinSingle" class="px-3 py-2.5 rounded-xl border border-slate-600 text-slate-400 text-xs" style="background:transparent;cursor:pointer;">
+          🔄 Reset
+        </button>
+      </div>
+    </div>
+
+    <div class="panel p-4 mt-4 circuit-line">
+      ${isTOP22 ? renderBattlePairsTable(spState.assigned) : renderPlainSpinTable(spState.assigned)}
+    </div>
+
+    <div id="spinnerModalWrap"></div>
+  `;
+
+  const names = isFinished ? ["Selesai"] : spState.wheelOrder1.map(u => unitLabel(u));
+  drawWheelCanvas("wheelCanvasSingle", names, spState.currentAngle1);
+
+  document.getElementById("btnShuffleSingle").onclick = () => {
+    if (spState.remaining.length <= 1) return;
+    spState.wheelOrder1 = shuffleArray([...spState.remaining]);
+    drawWheelCanvas("wheelCanvasSingle", spState.wheelOrder1.map(u => unitLabel(u)), spState.currentAngle1);
+    showToast("Tampilan di roda berhasil diacak!");
+  };
+
+  document.getElementById("btnResetSpinSingle").onclick = () => {
+    if (confirm(isTOP22 ? "Reset ulang undian battle? Semua grup akan dibatalkan dari awal." : "Reset ulang undian babak ini?")) {
+      const initialUnits = isTOP22 ? orderGroupsForSpin(buildGroups(participants)) : [...participants];
+      window._spinnerState = {
+        stage: cfg.activeStage,
+        remaining: initialUnits,
+        wheelOrder1: shuffleArray([...initialUnits]),
+        assigned: [],
+        currentAngle1: 0,
+        spinCount: 0
+      };
+      renderSpinner(content);
+    }
+  };
+
+  document.getElementById("btnSpinSingle").onclick = async () => {
+    if (spState.remaining.length === 0) return;
+    const btnSpin = document.getElementById("btnSpinSingle");
+    const btnShuffle = document.getElementById("btnShuffleSingle");
+    btnSpin.disabled = true;
+    if (btnShuffle) btnShuffle.disabled = true;
+
+    // Sama seperti babak lain: hasil SELALU unit paling depan di antrian
+    // (urutan sudah diatur dari Google Sheets — untuk TOP22, per grup 2 orang).
+    // Roda hanya diputar sampai berhenti tepat di label ini — murni gimmick
+    // visual, bukan penentu hasil.
+    const targetUnit = spState.remaining[0];
+    const wheelNames = spState.wheelOrder1.map(u => unitLabel(u));
+    const chosenIdx = spState.wheelOrder1.findIndex(u => unitLabel(u) === unitLabel(targetUnit));
+
+    const slice = (2 * Math.PI) / wheelNames.length;
+    const midAngle = chosenIdx * slice + slice / 2;
+    let targetRot = (2 * Math.PI - midAngle) % (2 * Math.PI);
+    if (targetRot < 0) targetRot += 2 * Math.PI;
+
+    const finalAngle = spState.currentAngle1 + (6 * 2 * Math.PI) + (targetRot - (spState.currentAngle1 % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+
+    animateSingleWheel("wheelCanvasSingle", wheelNames, spState.currentAngle1, finalAngle, async () => {
+      spState.currentAngle1 = finalAngle;
+      if (!spState.assigned) spState.assigned = [];
+      spState.assigned.push(targetUnit);
+      spState.remaining.splice(0, 1);
+      spState.wheelOrder1 = shuffleArray([...spState.remaining]);
+
+      let updatedParticipants;
+      if (isTOP22) {
+        const flatAssigned = [];
+        spState.assigned.forEach(g => g.members.forEach(m => flatAssigned.push(m)));
+        const flatRemaining = [];
+        spState.remaining.forEach(g => g.members.forEach(m => flatRemaining.push(m)));
+        updatedParticipants = [...flatAssigned, ...flatRemaining].map((p, idx) => ({ ...p, nomorUrut: idx + 1 }));
+      } else {
+        updatedParticipants = [
+          ...spState.assigned,
+          ...spState.remaining.map((p, idx) => ({ ...p, nomorUrut: spState.assigned.length + idx + 1 }))
+        ];
+      }
+
+      // Simpan ke Google Sheets di background — tidak menahan UI.
+      api("setParticipants", { stage: cfg.activeStage, participants: updatedParticipants })
+        .catch(e => console.error("Gagal update Google Sheets", e));
+
+      if (isTOP22) {
+        showBattleResultModal(targetUnit, spState.remaining.length, () => {
+          renderSpinner(content);
+        });
+      } else {
+        showSpinnerResultModal(targetUnit, spState.remaining.length, () => {
+          renderSpinner(content);
+        });
+      }
+    });
+  };
+}
+
+// Tabel hasil khusus babak Battle TOP22: setiap grup yang sudah diundi
+// ditampilkan dengan label tetapnya ("Grup #1", "Grup #2", dst — sesuai
+// urutan NomorUrut asli di Sheets) beserta kedua pesertanya.
+function renderBattlePairsTable(assignedGroups) {
+  const list = assignedGroups || [];
+  if (list.length === 0) {
+    return `
+      <h3 class="font-display text-md text-cyan-300 mb-3">Tabel Hasil Spin / Pasangan Battle</h3>
+      <p class="text-sm text-slate-500">Belum ada grup battle yang diundi.</p>
+    `;
+  }
+  return `
+    <h3 class="font-display text-md text-cyan-300 mb-3">Tabel Hasil Spin / Pasangan Battle (${list.length} Grup Terundi)</h3>
+    <div class="space-y-3">
+      ${list.map(group => {
+        const p1 = group.members[0];
+        const p2 = group.members[1];
+        return `
+        <div class="p-3 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-2" style="background:rgba(56,240,224,0.05);border:1px solid var(--line);">
+          <div class="flex items-center gap-2">
+            <span class="font-display text-amber-300 text-md">${group.label}</span>
+          </div>
+          <div class="flex items-center gap-3 justify-between flex-1 sm:justify-center">
+            <div class="text-right flex-1">
+              ${p1 ? `
+                <div class="font-bold text-sm text-cyan-300">#${p1.nomorUrut} ${escapeHtml(p1.nama)}</div>
+                <div class="text-xs text-slate-400">${escapeHtml(p1.lagu || '-')}</div>
+              ` : `<div class="text-xs text-slate-500 italic">-</div>`}
+            </div>
+            <span class="font-display text-red-400 text-xs px-2 py-1 rounded bg-slate-900 border border-slate-700">VS</span>
+            <div class="text-left flex-1">
+              ${p2 ? `
+                <div class="font-bold text-sm text-amber-300">#${p2.nomorUrut} ${escapeHtml(p2.nama)}</div>
+                <div class="text-xs text-slate-400">${escapeHtml(p2.lagu || '-')}</div>
+              ` : `<div class="text-xs text-slate-500 italic">Peserta ganjil — tanpa lawan</div>`}
+            </div>
+          </div>
+        </div>
+      `;
+      }).join("")}
+    </div>
+  `;
+}
+
+// Tabel hasil untuk babak non-battle (sama seperti sebelumnya).
+function renderPlainSpinTable(assigned) {
+  const list = assigned || [];
+  if (list.length === 0) {
+    return `
+      <h3 class="font-display text-md text-cyan-300 mb-3">Tabel Hasil Spin / Urutan Tampil</h3>
+      <p class="text-sm text-slate-500">Belum ada peserta yang diundi.</p>
+    `;
+  }
+  return `
+    <h3 class="font-display text-md text-cyan-300 mb-3">Tabel Hasil Spin / Urutan Tampil (${list.length} Peserta Terundi)</h3>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-slate-400 text-left">
+            <th class="py-2 pr-2">No. Urut</th>
+            <th class="py-2 pr-2">Nama Peserta</th>
+            <th class="py-2 pr-2">Judul Lagu</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${list.map(item => `
+            <tr>
+              <td class="py-2 pr-2 font-bold text-amber-300">#${item.nomorUrut}</td>
+              <td class="py-2 pr-2 font-semibold text-white">${escapeHtml(item.nama)}</td>
+              <td class="py-2 pr-2 text-slate-400">${escapeHtml(item.lagu || '-')}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function showGimmickSameNameModal(participant, onClose) {
+  const wrap = document.getElementById("spinnerModalWrap");
+  if (!wrap) return;
+
+  wrap.innerHTML = `
+    <div class="fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
+      <div class="panel w-full sm:max-w-md p-6 circuit-line text-center relative rounded-2xl" style="border:2px solid var(--red); box-shadow: 0 0 35px rgba(255,92,108,0.5);">
+        <div class="text-3xl mb-1">⚠️ 🎭 ⚠️</div>
+        <div class="text-xs mono tracking-widest text-red-400 font-bold mb-1">HASIL TIDAK SAH!</div>
+        <h2 class="font-display text-2xl spotlight-text mb-3">NAMA KETEMU NAMA SAMA</h2>
+
+        <div class="p-4 rounded-xl mb-4 bg-slate-900/90 border border-red-500/30">
+          <p class="text-xs text-slate-400 mb-1">Roda 1 &amp; Roda 2 Menunjuk Ke:</p>
+          <div class="font-display text-2xl text-cyan-300 mb-1">${escapeHtml(participant.nama)}</div>
+          <div class="text-xs text-slate-400">${escapeHtml(participant.lagu || 'Peserta TOP 22')}</div>
+        </div>
+
+        <p class="text-amber-300 text-xs font-semibold mb-6">Kedua roda memunculkan nama yang sama persis! Sesuai aturan battle, pengundian ini batal dan harus diputar ulang!</p>
+
+        <button id="btnGimmickRetry" class="btn-primary w-full py-3.5 rounded-xl text-base font-bold shadow-lg">
+          🔄 SPIN ULANG BATTLE
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("btnGimmickRetry").onclick = () => {
+    wrap.innerHTML = "";
+    if (onClose) onClose();
+  };
+}
+
+function showBattleResultModal(group, remainingGroupCount, onClose) {
+  const wrap = document.getElementById("spinnerModalWrap");
+  if (!wrap) return;
+
+  const p1 = group.members[0];
+  const p2 = group.members[1];
+
+  wrap.innerHTML = `
+    <div class="fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
+      <div class="panel w-full sm:max-w-md p-6 circuit-line text-center relative rounded-2xl" style="border:2px solid var(--amber); box-shadow: 0 0 30px rgba(255,179,71,0.3);">
+        <div class="text-xs mono tracking-widest text-amber-300 mb-1">HASIL UNDIAN: ${group.label.toUpperCase()}</div>
+        <h2 class="font-display text-2xl spotlight-text mb-4">BATTLE:</h2>
+
+        <div class="grid grid-cols-2 gap-3 mb-6 p-4 rounded-xl" style="background:rgba(16,22,31,0.8);border:1px solid var(--line);">
+          <div class="border-r border-slate-700 pr-2">
+            <span class="text-xs text-cyan-300 font-bold block mb-1">PESERTA 1${p1 ? ` (#${p1.nomorUrut})` : ''}</span>
+            <div class="font-display text-lg leading-tight text-white mb-1">${p1 ? escapeHtml(p1.nama) : '-'}</div>
+            <div class="text-xs text-slate-400">${p1 ? escapeHtml(p1.lagu || '-') : ''}</div>
+          </div>
+          <div class="pl-2">
+            <span class="text-xs text-amber-300 font-bold block mb-1">PESERTA 2${p2 ? ` (#${p2.nomorUrut})` : ''}</span>
+            <div class="font-display text-lg leading-tight text-white mb-1">${p2 ? escapeHtml(p2.nama) : '-'}</div>
+            <div class="text-xs text-slate-400">${p2 ? escapeHtml(p2.lagu || '-') : ''}</div>
+          </div>
+        </div>
+
+        <button id="btnModalBattleContinue" class="btn-primary w-full py-3.5 rounded-xl text-base font-bold">
+          ${remainingGroupCount >= 1 ? `LANJUT PUTAR GRUP BERIKUTNYA` : 'SELESAI — SEMUA GRUP TERBENTUK'}
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("btnModalBattleContinue").onclick = () => {
+    wrap.innerHTML = "";
+    if (onClose) onClose();
+  };
+}
+
+function showSpinnerResultModal(participant, remainingCount, onClose) {
+  const wrap = document.getElementById("spinnerModalWrap");
+  if (!wrap) return;
+
+  wrap.innerHTML = `
+    <div class="fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4">
+      <div class="panel w-full sm:max-w-md p-6 circuit-line text-center relative rounded-2xl" style="border:2px solid var(--cyan); box-shadow: 0 0 30px rgba(56,240,224,0.3);">
+        <div class="text-xs mono tracking-widest text-amber-300 mb-1">PESERTA TAMPIL NOMOR URUT #${participant.nomorUrut}</div>
+        <h2 class="font-display text-3xl spotlight-text mb-2">${escapeHtml(participant.nama)}</h2>
+        <p class="text-slate-400 text-sm mb-6">${escapeHtml(participant.lagu ? `Lagu: ${participant.lagu}` : 'Belum ada lagu')}</p>
+
+        <button id="btnModalContinue" class="btn-primary w-full py-3.5 rounded-xl text-base font-bold">
+          ${remainingCount > 0 ? `LANJUT SPIN (${remainingCount} PESERTA LAGI)` : 'SELESAI — SEMUA TERUNDI'}
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("btnModalContinue").onclick = () => {
+    wrap.innerHTML = "";
+    if (onClose) onClose();
+  };
+}
+
+function drawWheelCanvas(canvasId, names, angle) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const w = canvas.width, h = canvas.height;
+  const cx = w / 2, cy = h / 2, r = (w / 2) - 4;
+
+  ctx.clearRect(0, 0, w, h);
+
+  const n = names.length;
+  if (n === 0) return;
+  const slice = (2 * Math.PI) / n;
+
+  const palette = [
+    { bg: '#E52531', text: '#FFFFFF' }, 
+    { bg: '#E9A321', text: '#000000' }, 
+    { bg: '#38A538', text: '#FFFFFF' }, 
+    { bg: '#2C6ED5', text: '#FFFFFF' }  
+  ];
+
+  const k = palette.length;
+  const colorIndices = [];
+  for (let i = 0; i < n; i++) {
+    if (i === 0) {
+      colorIndices[0] = 0;
+    } else if (i === n - 1) {
+      let candidate = (colorIndices[i - 1] + 1) % k;
+      if (candidate === colorIndices[0]) {
+        candidate = (candidate + 1) % k;
+      }
+      colorIndices[i] = candidate;
+    } else {
+      let candidate = (colorIndices[i - 1] + 1) % k;
+      colorIndices[i] = candidate;
+    }
+  }
+
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(angle);
+  ctx.translate(-cx, -cy);
+
+  for (let i = 0; i < n; i++) {
+    const startA = i * slice;
+    const endA = (i + 1) * slice;
+    const color = palette[colorIndices[i]];
+
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, startA, endA);
+    ctx.closePath();
+
+    ctx.fillStyle = color.bg;
+    ctx.fill();
+
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(startA + slice / 2);
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = color.text;
+
+    let fontSize = Math.max(11, Math.min(18, Math.floor(220 / n)));
+    ctx.font = `700 ${fontSize}px Arial, sans-serif`;
+
+    let label = names[i];
+    if (label.length > 12) label = label.substring(0, 10) + "..";
+
+    ctx.fillText(label, r - 15, 0);
+    ctx.restore();
+  }
+
+  ctx.restore();
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 0.22, 0, 2 * Math.PI);
+  ctx.fillStyle = "#FFFFFF";
+  ctx.fill();
+  ctx.restore();
+}
+
+function animateDualWheels(id1, names1, startA1, targetA1, id2, names2, startA2, targetA2, done) {
+  const start = performance.now();
+  const duration = 4500;
+
+  function frame(now) {
+    const t = Math.min(1, (now - start) / duration);
+    const eased = 1 - Math.pow(1 - t, 4);
+
+    const curr1 = startA1 + (targetA1 - startA1) * eased;
+    const curr2 = startA2 + (targetA2 - startA2) * eased;
+
+    drawWheelCanvas(id1, names1, curr1);
+    drawWheelCanvas(id2, names2, curr2);
+
+    if (t < 1) requestAnimationFrame(frame); else done();
+  }
+  requestAnimationFrame(frame);
+}
+
+function animateSingleWheel(id, names, startA, targetA, done) {
+  const start = performance.now();
+  const duration = 4000;
+
+  function frame(now) {
+    const t = Math.min(1, (now - start) / duration);
+    const eased = 1 - Math.pow(1 - t, 4);
+    const curr = startA + (targetA - startA) * eased;
+
+    drawWheelCanvas(id, names, curr);
+
+    if (t < 1) requestAnimationFrame(frame); else done();
+  }
+  requestAnimationFrame(frame);
+}
+window._rekapCache = null;
+
+window._rekapJuriFilter = "";
+
+async function renderRekap(content) {
+  // Pastikan daftar juri asli sudah ada sebelum menggambar dropdown filter.
+  await ensureJuriList();
+  // Tampilkan cache dulu (kalau ada) biar tidak nunggu network tiap buka tab ini,
+  // lalu tetap refresh diam-diam di background supaya datanya tetap up-to-date.
+  const juri = window._rekapJuriFilter || "";
+  const cacheKey = juri || "__all__";
+  const hasCache = !!(window._rekapCache && window._rekapCache._key === cacheKey);
+  if (hasCache) {
+    paintRekap(content, window._rekapCache);
+  } else {
+    content.innerHTML = `<div class="text-slate-400 p-6 text-center">Memuat data rekap...</div>`;
+  }
+  try {
+    const data = await api("getRecap", juri ? { juri } : {}, { silent: hasCache });
+    data._key = cacheKey;
+    window._rekapCache = data;
+    if (document.body.contains(content)) paintRekap(content, data);
+  } catch (e) {
+    if (!hasCache) content.innerHTML = `<div class="text-red-400 p-6 text-center">Gagal memuat data rekap.</div>`;
+  }
+}
+
+function paintRekap(content, data) {
+  const rows = data.recap || [];
+  const juri = window._rekapJuriFilter || "";
+  content.innerHTML = `
+    <div class="panel p-4 circuit-line overflow-x-auto">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <h2 class="font-display text-lg text-cyan-300">Rekap Nilai Total Efektif — ${data.stage}</h2>
+      </div>
+      <div class="mb-3">
+        <label class="block text-xs text-slate-400 mb-1">Tampilkan Nilai</label>
+        <select id="selRekapJuri" class="w-full text-sm">
+          <option value="" ${juri==='' ? 'selected' : ''}>Total Seluruh Juri</option>
+          ${JURI_LIST.map(j => `<option value="${escapeAttr(j)}" ${juri===j ? 'selected' : ''}>Hanya ${escapeHtml(j)}</option>`).join("")}
+        </select>
+      </div>
+      <table class="w-full text-sm">
+        <thead><tr class="text-slate-400 text-left">
+          <th class="py-2 pr-2">Peringkat</th><th class="py-2 pr-2">No</th><th class="py-2 pr-2">Nama</th>
+          <th class="py-2 pr-2">Lagu</th><th class="py-2 pr-2 text-right">Total Efektif</th>
+        </tr></thead>
+        <tbody>
+          ${rows.map((r,i)=>{
+            const rankFromBottom = rows.length - i;
+            return `<tr style="${rankColorStyle(rankFromBottom)}">
+              <td class="py-2 pr-2 font-bold">${i+1}</td>
+              <td class="py-2 pr-2">${r.nomorUrut}</td>
+              <td class="py-2 pr-2">${escapeHtml(r.nama)}</td>
+              <td class="py-2 pr-2 text-slate-400">${escapeHtml(r.lagu)}</td>
+              <td class="py-2 pr-2 text-right font-display">${r.total.toFixed(2)}</td>
+            </tr>`;
+          }).join("")}
+        </tbody>
+      </table>
+      <div class="flex gap-4 mt-4 text-xs text-slate-400">
+        <span><span class="inline-block w-3 h-3 rounded-sm mr-1" style="background:rgba(255,92,108,0.4)"></span>Eliminasi</span>
+        <span><span class="inline-block w-3 h-3 rounded-sm mr-1" style="background:rgba(255,179,71,0.4)"></span>Rawan</span>
+        <span><span class="inline-block w-3 h-3 rounded-sm mr-1" style="background:rgba(61,220,132,0.4)"></span>Aman</span>
+      </div>
+    </div>`;
+
+  document.getElementById("selRekapJuri").onchange = (e) => {
+    window._rekapJuriFilter = e.target.value;
+    renderRekap(content);
+  };
+}
+
+window._trendInitCache = null;
+
+async function renderTrend(content) {
+  content.innerHTML = `<div class="text-slate-400 p-6 text-center">Menyiapkan grafik trend...</div>`;
+  
+  // Pastikan Chart.js sudah di-load sebelum lanjut
+  await loadChartJs();
+
+  // (Sisa kode renderTrend Anda tetap sama...)
+  let names, activeStage;
+  if (window._trendInitCache) {
+// ...
+    ({ names, activeStage } = window._trendInitCache);
+    if (!JURI_LIST.length) await ensureJuriList();
+  } else {
+    content.innerHTML = `<div class="text-slate-400 p-6 text-center">Memuat data trend...</div>`;
+    // Dulu 2 request terpisah (getAllParticipantsAcrossStages + getAdminConfig),
+    // sekarang 1 request saja -> separuh waktu tunggu saat pertama buka menu Trend.
+    const data = await api("getTrendInit", {}).catch(() => ({ names: [], activeStage: STAGES[0], juriList: [] }));
+    names = data.names || [];
+    activeStage = data.activeStage || STAGES[0];
+    if (Array.isArray(data.juriList) && data.juriList.length) JURI_LIST = data.juriList;
+    window._trendInitCache = { names, activeStage };
+  }
+
+  content.innerHTML = `
+    <div class="panel p-4 circuit-line">
+      <h2 class="font-display text-lg text-amber-300 mb-3">Grafik Trend &amp; Performa Peserta</h2>
+      
+      <div class="space-y-3 mb-4">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Pilih Mode Grafik</label>
+          <select id="selTrendMode" class="w-full text-sm">
+            <option value="stage">Per Babak (Seluruh Peserta)</option>
+            <option value="combined">Gabungan Seluruh Babak &amp; Peserta</option>
+            <option value="participant">Per Peserta (Semua Babak)</option>
+          </select>
+        </div>
+
+        <div id="subFilterWrap"></div>
+      </div>
+
+      <div id="chartContainer" class="relative w-full" style="height:300px;">
+        <canvas id="trendChart"></canvas>
+      </div>
+    </div>`;
+
+  const selMode = document.getElementById("selTrendMode");
+  const subWrap = document.getElementById("subFilterWrap");
+  const juriFilterHtml = `
+    <div class="mt-3">
+      <label class="block text-xs text-slate-400 mb-1">Tampilkan Nilai</label>
+      <select id="selTrendJuri" class="w-full text-sm">
+        <option value="">Total Seluruh Juri</option>
+        ${JURI_LIST.map(j => `<option value="${escapeAttr(j)}">Hanya ${escapeHtml(j)}</option>`).join("")}
+      </select>
+    </div>`;
+
+  function renderSubFilter() {
+    const mode = selMode.value;
+    if (mode === "stage") {
+      subWrap.innerHTML = `
+        <label class="block text-xs text-slate-400 mb-1">Pilih Babak</label>
+        <select id="selTrendStage" class="w-full text-sm">
+          ${STAGES.map(s => `<option value="${s}" ${s === activeStage ? 'selected' : ''}>${s}</option>`).join("")}
+        </select>` + juriFilterHtml;
+      document.getElementById("selTrendStage").onchange = updateTrendView;
+      document.getElementById("selTrendJuri").onchange = updateTrendView;
+    } else if (mode === "participant") {
+      subWrap.innerHTML = `
+        <label class="block text-xs text-slate-400 mb-1">Pilih Nama Peserta</label>
+        <select id="selTrendPeserta" class="w-full text-sm">
+          <option value="">-- Pilih Peserta --</option>
+          ${names.map(n => `<option value="${escapeAttr(n)}">${escapeHtml(n)}</option>`).join("")}
+        </select>` + juriFilterHtml;
+      document.getElementById("selTrendPeserta").onchange = updateTrendView;
+      document.getElementById("selTrendJuri").onchange = updateTrendView;
+    } else {
+      subWrap.innerHTML = `<p class="text-xs text-cyan-300 mb-2">Menampilkan grafik batang rata-rata performa seluruh peserta dari seluruh babak yang telah direkap.</p>` + juriFilterHtml;
+      document.getElementById("selTrendJuri").onchange = updateTrendView;
+    }
+    updateTrendView();
+  }
+
+  selMode.onchange = renderSubFilter;
+  renderSubFilter();
+}
+
+async function updateTrendView() {
+  const mode = document.getElementById("selTrendMode").value;
+  const chartContainer = document.getElementById("chartContainer");
+  chartContainer.style.opacity = "0.5";
+  const juriEl = document.getElementById("selTrendJuri");
+  const juri = juriEl ? juriEl.value : "";
+  const juriLabel = juri ? ` (${juri})` : " (Total Seluruh Juri)";
+
+  if (mode === "stage") {
+    const stageEl = document.getElementById("selTrendStage");
+    const stage = stageEl ? stageEl.value : STAGES[0];
+    try {
+      const params = { stage };
+      if (juri) params.juri = juri;
+      const data = await api("getRecap", params);
+      const rows = data.recap || [];
+      const labels = rows.map(r => r.nama);
+      const values = rows.map(r => r.total);
+      drawTrendChart(labels, values, `Nilai Total Peserta — ${stage}${juriLabel}`);
+    } catch (e) {
+      showToast("Gagal memuat data babak", true);
+    }
+  } else if (mode === "participant") {
+    const pEl = document.getElementById("selTrendPeserta");
+    const nama = pEl ? pEl.value : "";
+    if (!nama) { chartContainer.style.opacity = "1"; return; }
+    try {
+      const params = { nama };
+      if (juri) params.juri = juri;
+      const trend = await api("getTrend", params);
+      drawTrendChart(trend.labels || [], trend.values || [], `Grafik Performa: ${nama}${juriLabel}`);
+    } catch (e) {
+      showToast("Gagal memuat trend peserta", true);
+    }
+  } else if (mode === "combined") {
+    try {
+      // Dulu: 12 request paralel (1 per babak) ke Apps Script -> sangat lambat
+      // dan rawan timeout/quota. Sekarang: 1 request, server yang menggabungkan
+      // ke-12 babak dalam satu eksekusi.
+      const params = {};
+      if (juri) params.juri = juri;
+      const data = await api("getCombinedRecap", params);
+      const labels = data.labels || [];
+      const values = data.values || [];
+
+      if (labels.length === 0) {
+        showToast("Belum ada data rekap gabungan", true);
+      } else {
+        drawTrendChart(labels, values, `Rata-Rata Nilai Seluruh Babak (Semua Peserta)${juriLabel}`);
+      }
+    } catch (e) {
+      showToast("Gagal memuat rekap gabungan", true);
+    }
+  }
+  chartContainer.style.opacity = "1";
+}
+
+let trendChartInstance = null;
+function drawTrendChart(labels, values, datasetLabel = "Nilai Total") {
+  const canvas = document.getElementById("trendChart");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  if (trendChartInstance) trendChartInstance.destroy();
+
+  trendChartInstance = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: datasetLabel,
+        data: values,
+        backgroundColor: "rgba(122, 86, 255, 0.66)",
+        borderColor: "#42d9ff",
+        borderWidth: 1.5,
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: {
+          ticks: { color: "#aab1cf", font: { size: 11 } },
+          grid: { color: "rgba(112,115,163,.18)" }
+        },
+        y: {
+          beginAtZero: true,
+          ticks: { color: "#aab1cf", font: { size: 11 } },
+          grid: { color: "rgba(112,115,163,.18)" }
+        }
+      },
+      plugins: {
+        legend: {
+          display: true,
+          labels: { color: "#f4f6ff", font: { size: 12 } }
+        },
+        tooltip: {
+          backgroundColor: "#08081e",
+          titleColor: "#42d9ff",
+          bodyColor: "#f4f6ff",
+          borderColor: "rgba(122,86,255,.55)",
+          borderWidth: 1
+        }
+      }
+    }
+  });
+}
+
+// Warna ranking hanya dipakai di Rekap Admin. Panel Juri sengaja tidak
+// memiliki warna berdasarkan total/ranking agar penilaian berikutnya tidak bias.
+function rankColorStyle(rankFromBottom) {
+  if (rankFromBottom <= 3) return "background:rgba(255,92,108,0.15)";
+  if (rankFromBottom <= 5) return "background:rgba(255,179,71,0.13)";
+  return "background:rgba(61,220,132,0.10)";
+}
+
+function escapeHtml(s){ return String(s??"").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function escapeAttr(s){ return escapeHtml(s); }
+
+render();
+
+// Memuat Chart.js secara asinkron hanya saat diperlukan
+function loadChartJs() {
+  return new Promise((resolve) => {
+    if (window.Chart) return resolve();
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js";
+    script.onload = resolve;
+    document.head.appendChild(script);
+  });
+}
+
+</script>
+</body>
+</html>
