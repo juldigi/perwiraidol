@@ -2001,25 +2001,33 @@ window._rekapCache = null;
 window._rekapJuriFilter = "";
 
 async function renderRekap(content) {
-  // Pastikan daftar juri asli sudah ada sebelum menggambar dropdown filter.
   await ensureJuriList();
-  // Tampilkan cache dulu (kalau ada) biar tidak nunggu network tiap buka tab ini,
-  // lalu tetap refresh diam-diam di background supaya datanya tetap up-to-date.
+  // Ambil daftar nama resmi lintas babak agar anggota duet/trio dapat
+  // dipetakan walaupun peserta tidak memiliki baris solo pada babak ini.
+  if (!window._trendInitCache || !Array.isArray(window._trendInitCache.names) || !window._trendInitCache.names.length) {
+    try {
+      const init = await api("getTrendInit", {});
+      window._trendInitCache = {
+        ...(window._trendInitCache || {}),
+        names: init.names || [],
+        activeStage: init.activeStage || STAGES[0]
+      };
+    } catch (e) {
+      // Rekap tetap dapat dibuka; pemetaan anggota grup mungkin terbatas.
+    }
+  }
   const juri = window._rekapJuriFilter || "";
   const cacheKey = juri || "__all__";
   const hasCache = !!(window._rekapCache && window._rekapCache._key === cacheKey);
-  if (hasCache) {
-    paintRekap(content, window._rekapCache);
-  } else {
-    content.innerHTML = `<div class="text-slate-400 p-6 text-center">Memuat data rekap...</div>`;
-  }
+  if (hasCache) paintRekap(content, window._rekapCache);
+  else content.innerHTML = \`<div class="text-slate-400 p-6 text-center">Memuat data rekap...</div>\`;
   try {
     const data = await api("getRecap", juri ? { juri } : {}, { silent: hasCache });
     data._key = cacheKey;
     window._rekapCache = data;
     if (document.body.contains(content)) paintRekap(content, data);
   } catch (e) {
-    if (!hasCache) content.innerHTML = `<div class="text-red-400 p-6 text-center">Gagal memuat data rekap.</div>`;
+    if (!hasCache) content.innerHTML = \`<div class="text-red-400 p-6 text-center">Gagal memuat data rekap.</div>\`;
   }
 }
 
