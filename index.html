@@ -2163,18 +2163,16 @@ async function renderTrend(content) {
 function trendIndividualNames(rowName, knownNames) {
   const raw = String(rowName || "").trim();
   if (!raw) return [];
+  const groupPattern = /(?:&|\\+|\\bdan\\b|\\bfeat\\.?\\b|\\bft\\.?\\b|,|\\/)/i;
   const individualNames = (knownNames || [])
     .map(n => String(n || "").trim())
-    .filter(n => n && !/(?:&|\\+|\\bdan\\b|\\bfeat\\.?\\b|\\bft\\.?\\b|,|\\/|\\bx\\b)/i.test(n))
+    .filter(n => n && !groupPattern.test(n))
     .sort((a,b) => b.length - a.length);
   const normalized = raw.toLocaleLowerCase("id-ID");
-  const matched = individualNames.filter(n => {
-    const escaped = n.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\$&");
-    return new RegExp("(^|[^\\p{L}\\p{N}])" + escaped + "($|[^\\p{L}\\p{N}])", "iu").test(normalized);
-  });
+  const matched = individualNames.filter(n => normalized.includes(n.toLocaleLowerCase("id-ID")));
   if (matched.length) return [...new Set(matched)];
   // Jika nama pada baris memang nama individu, pertahankan apa adanya.
-  if (!/(?:&|\\+|\\bdan\\b|\\bfeat\\.?\\b|\\bft\\.?\\b|,|\\/)/i.test(raw)) return [raw];
+  if (!groupPattern.test(raw)) return [raw];
   return [];
 }
 
