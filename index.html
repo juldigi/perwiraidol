@@ -1999,6 +1999,7 @@ function animateSingleWheel(id, names, startA, targetA, done) {
 window._rekapCache = null;
 
 window._rekapJuriFilter = "";
+window._rekapTypeFilter = "combined";
 
 async function renderRekap(content) {
   await ensureJuriList();
@@ -2017,7 +2018,8 @@ async function renderRekap(content) {
     }
   }
   const juri = window._rekapJuriFilter || "";
-  const cacheKey = juri || "__all__";
+  const type = window._rekapTypeFilter || "combined";
+  const cacheKey = `${juri || "__all__"}::${type}`;
   const hasCache = !!(window._rekapCache && window._rekapCache._key === cacheKey);
   if (hasCache) paintRekap(content, window._rekapCache);
   else content.innerHTML = `<div class="text-slate-400 p-6 text-center">Memuat data rekap...</div>`;
@@ -2069,14 +2071,23 @@ function aggregateRecapRowsByParticipant(rows, knownNames) {
 }
 
 function paintRekap(content, data) {
-  const rawRows = data.recap || [];
   const knownNames = (window._trendInitCache && window._trendInitCache.names) || [];
+  const type = window._rekapTypeFilter || "combined";
+  const rawRows = (data.recap || []).filter(row => type === "combined" || trendRowCategory(row.nama) === type);
   const rows = aggregateRecapRowsByParticipant(rawRows, knownNames);
   const juri = window._rekapJuriFilter || "";
   content.innerHTML = `
     <div class="panel p-4 circuit-line overflow-x-auto">
       <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
         <h2 class="font-display text-lg text-cyan-300">Rekap Nilai Total Efektif — ${data.stage}</h2>
+      </div>
+      <div class="mb-3">
+        <label class="block text-xs text-slate-400 mb-1">Jenis Penampilan</label>
+        <select id="selRekapType" class="w-full text-sm">
+          <option value="combined" ${type === "combined" ? "selected" : ""}>Gabungan Solo + Duet/Trio</option>
+          <option value="solo" ${type === "solo" ? "selected" : ""}>Hanya Solo</option>
+          <option value="group" ${type === "group" ? "selected" : ""}>Hanya Duet/Trio</option>
+        </select>
       </div>
       <div class="mb-3">
         <label class="block text-xs text-slate-400 mb-1">Tampilkan Nilai</label>
@@ -2110,6 +2121,10 @@ function paintRekap(content, data) {
       </div>
     </div>`;
 
+  document.getElementById("selRekapType").onchange = (e) => {
+    window._rekapTypeFilter = e.target.value;
+    renderRekap(content);
+  };
   document.getElementById("selRekapJuri").onchange = (e) => {
     window._rekapJuriFilter = e.target.value;
     renderRekap(content);
@@ -2117,6 +2132,7 @@ function paintRekap(content, data) {
 }
 
 window._trendInitCache = null;
+window._trendTypeFilter = "combined";
 
 async function renderTrend(content) {
   content.innerHTML = `<div class="text-slate-400 p-6 text-center">Menyiapkan grafik trend...</div>`;
@@ -2165,6 +2181,15 @@ async function renderTrend(content) {
 
   const selMode = document.getElementById("selTrendMode");
   const subWrap = document.getElementById("subFilterWrap");
+  const typeFilterHtml = `
+    <div class="mt-3">
+      <label class="block text-xs text-slate-400 mb-1">Jenis Penampilan</label>
+      <select id="selTrendType" class="w-full text-sm">
+        <option value="combined" ${window._trendTypeFilter === "combined" ? "selected" : ""}>Gabungan Solo + Duet/Trio</option>
+        <option value="solo" ${window._trendTypeFilter === "solo" ? "selected" : ""}>Hanya Solo</option>
+        <option value="group" ${window._trendTypeFilter === "group" ? "selected" : ""}>Hanya Duet/Trio</option>
+      </select>
+    </div>`;
   const juriFilterHtml = `
     <div class="mt-3">
       <label class="block text-xs text-slate-400 mb-1">Tampilkan Nilai</label>
@@ -2177,15 +2202,16 @@ async function renderTrend(content) {
   function renderSubFilter() {
     const mode = selMode.value;
     if (mode === "stage") {
-      subWrap.innerHTML = `
+      subWrap.innerHTML = typeFilterHtml + `
         <label class="block text-xs text-slate-400 mb-1">Pilih Babak</label>
         <select id="selTrendStage" class="w-full text-sm">
           ${STAGES.map(s => `<option value="${s}" ${s === activeStage ? 'selected' : ''}>${s}</option>`).join("")}
         </select>` + juriFilterHtml;
       document.getElementById("selTrendStage").onchange = updateTrendView;
       document.getElementById("selTrendJuri").onchange = updateTrendView;
+      document.getElementById("selTrendType").onchange = (e) => { window._trendTypeFilter = e.target.value; updateTrendView(); };
     } else if (mode === "participant") {
-      subWrap.innerHTML = `
+      subWrap.innerHTML = typeFilterHtml + `
         <label class="block text-xs text-slate-400 mb-1">Pilih Nama Peserta</label>
         <select id="selTrendPeserta" class="w-full text-sm">
           <option value="">-- Pilih Peserta --</option>
@@ -2193,9 +2219,11 @@ async function renderTrend(content) {
         </select>` + juriFilterHtml;
       document.getElementById("selTrendPeserta").onchange = updateTrendView;
       document.getElementById("selTrendJuri").onchange = updateTrendView;
+      document.getElementById("selTrendType").onchange = (e) => { window._trendTypeFilter = e.target.value; updateTrendView(); };
     } else {
-      subWrap.innerHTML = `<p class="text-xs text-cyan-300 mb-2">Menampilkan grafik batang rata-rata performa seluruh peserta dari seluruh babak yang telah direkap.</p>` + juriFilterHtml;
+      subWrap.innerHTML = typeFilterHtml + `<p class="text-xs text-cyan-300 mb-2">Menampilkan grafik batang akumulasi performa peserta dari seluruh babak yang telah direkap.</p>` + juriFilterHtml;
       document.getElementById("selTrendJuri").onchange = updateTrendView;
+      document.getElementById("selTrendType").onchange = (e) => { window._trendTypeFilter = e.target.value; updateTrendView(); };
     }
     updateTrendView();
   }
@@ -2239,6 +2267,11 @@ function trendIndividualNames(rowName, knownNames) {
   return individualNames.filter(containsWholeName);
 }
 
+function trendRowCategory(rowName) {
+  const value = String(rowName || "").trim();
+  return (/[&+,/]/.test(value) || /\b(dan|feat|ft)\b/i.test(value) || /\s+x\s+/i.test(value)) ? "group" : "solo";
+}
+
 function aggregateTrendRows(rows, knownNames) {
   const totals = new Map();
   (rows || []).forEach(row => {
@@ -2251,11 +2284,12 @@ function aggregateTrendRows(rows, knownNames) {
   return totals;
 }
 
-async function fetchTrendStage(stage, juri) {
+async function fetchTrendStage(stage, juri, type = "combined") {
   const params = { stage };
   if (juri) params.juri = juri;
   const data = await api("getRecap", params);
-  return aggregateTrendRows(data.recap || [], window._trendInitCache?.names || []);
+  const rows = (data.recap || []).filter(row => type === "combined" || trendRowCategory(row.nama) === type);
+  return aggregateTrendRows(rows, window._trendInitCache?.names || []);
 }
 
 async function updateTrendView() {
@@ -2265,6 +2299,9 @@ async function updateTrendView() {
   chartContainer.style.opacity = "0.5";
   const juriEl = document.getElementById("selTrendJuri");
   const juri = juriEl ? juriEl.value : "";
+  const typeEl = document.getElementById("selTrendType");
+  const type = typeEl ? typeEl.value : (window._trendTypeFilter || "combined");
+  const typeLabel = type === "solo" ? " — Solo" : type === "group" ? " — Duet/Trio" : " — Gabungan Solo + Duet/Trio";
   const juriLabel = juri ? ` (${juri})` : " (Total Seluruh Juri)";
   const knownNames = (window._trendInitCache && window._trendInitCache.names) || [];
 
@@ -2272,15 +2309,15 @@ async function updateTrendView() {
     if (modeEl.value === "stage") {
       const stageEl = document.getElementById("selTrendStage");
       const stage = stageEl ? stageEl.value : STAGES[0];
-      const totals = await fetchTrendStage(stage, juri);
+      const totals = await fetchTrendStage(stage, juri, type);
       const entries = [...totals.entries()].sort((a,b) => b[1] - a[1]);
       drawTrendChart(entries.map(e => e[0]), entries.map(e => Number(e[1].toFixed(2))),
-        `Total Per Peserta — ${stage}${juriLabel}`);
+        `Total Per Peserta${typeLabel} — ${stage}${juriLabel}`);
     } else if (modeEl.value === "participant") {
       const pEl = document.getElementById("selTrendPeserta");
       const nama = pEl ? pEl.value : "";
       if (!nama) { chartContainer.style.opacity = "1"; return; }
-      const stageMaps = await Promise.all(STAGES.map(stage => fetchTrendStage(stage, juri)));
+      const stageMaps = await Promise.all(STAGES.map(stage => fetchTrendStage(stage, juri, type)));
       const labels = [];
       const values = [];
       stageMaps.forEach((totals, i) => {
@@ -2289,9 +2326,9 @@ async function updateTrendView() {
           values.push(Number(totals.get(nama).toFixed(2)));
         }
       });
-      drawTrendChart(labels, values, `Total Per Babak: ${nama}${juriLabel}`);
+      drawTrendChart(labels, values, `Total Per Babak: ${nama}${typeLabel}${juriLabel}`);
     } else if (modeEl.value === "combined") {
-      const stageMaps = await Promise.all(STAGES.map(stage => fetchTrendStage(stage, juri)));
+      const stageMaps = await Promise.all(STAGES.map(stage => fetchTrendStage(stage, juri, type)));
       const totals = new Map();
       stageMaps.forEach(map => map.forEach((score, name) => {
         totals.set(name, (totals.get(name) || 0) + score);
@@ -2301,7 +2338,7 @@ async function updateTrendView() {
         showToast("Belum ada data rekap gabungan", true);
       } else {
         drawTrendChart(entries.map(e => e[0]), entries.map(e => Number(e[1].toFixed(2))),
-          `Akumulasi Nilai Seluruh Babak per Peserta${juriLabel}`);
+          `Akumulasi Nilai Seluruh Babak per Peserta${typeLabel}${juriLabel}`);
       }
     }
   } catch (e) {
