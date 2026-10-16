@@ -2163,21 +2163,34 @@ async function renderTrend(content) {
 function trendIndividualNames(rowName, knownNames) {
   const raw = String(rowName || "").trim();
   if (!raw) return [];
-  const isGroupName = value => {
-    const s = String(value || "").toLocaleLowerCase("id-ID");
-    return s.includes("&") || s.includes("+") || s.includes(" dan ") ||
-      s.includes(",") || s.includes("/") || s.includes(" feat ") ||
-      s.includes(" ft ") || s.includes(" x ");
-  };
-  const individualNames = (knownNames || [])
-    .map(n => String(n || "").trim())
-    .filter(n => n && !isGroupName(n))
-    .sort((a,b) => b.length - a.length);
   const normalized = raw.toLocaleLowerCase("id-ID");
-  const matched = individualNames.filter(n => normalized.includes(n.toLocaleLowerCase("id-ID")));
-  if (matched.length) return [...new Set(matched)];
-  if (!isGroupName(raw)) return [raw];
-  return [];
+  const isWordChar = ch => !!ch && /[\\p{L}\\p{N}]/u.test(ch);
+  const containsWholeName = name => {
+    const needle = String(name || "").trim().toLocaleLowerCase("id-ID");
+    if (!needle) return false;
+    let from = 0;
+    while (true) {
+      const at = normalized.indexOf(needle, from);
+      if (at < 0) return false;
+      const before = at > 0 ? normalized[at - 1] : "";
+      const afterIndex = at + needle.length;
+      const after = afterIndex < normalized.length ? normalized[afterIndex] : "";
+      if (!isWordChar(before) && !isWordChar(after)) return true;
+      from = at + 1;
+    }
+  };
+  const individualNames = [...new Set((knownNames || [])
+    .map(n => String(n || "").trim())
+    .filter(Boolean))]
+    .sort((a,b) => b.length - a.length);
+  const matched = individualNames.filter(containsWholeName);
+  if (matched.length) return matched;
+  // Nama tunggal tetap dapat direkap meskipun belum ada di daftar cache.
+  const lower = normalized;
+  const hasGroupSeparator = /[&+,/]/.test(raw) ||
+    /\\b(dan|feat|ft)\\b/i.test(lower) ||
+    /\\s+x\\s+/i.test(lower);
+  return hasGroupSeparator ? [] : [raw];
 }
 
 function aggregateTrendRows(rows, knownNames) {
