@@ -2164,7 +2164,7 @@ function trendIndividualNames(rowName, knownNames) {
   const raw = String(rowName || "").trim();
   if (!raw) return [];
   const normalized = raw.toLocaleLowerCase("id-ID");
-  const isWordChar = ch => !!ch && /[\\p{L}\\p{N}]/u.test(ch);
+  const isWordChar = ch => !!ch && /[\p{L}\p{N}]/u.test(ch);
   const containsWholeName = name => {
     const needle = String(name || "").trim().toLocaleLowerCase("id-ID");
     if (!needle) return false;
@@ -2186,10 +2186,9 @@ function trendIndividualNames(rowName, knownNames) {
   const matched = individualNames.filter(containsWholeName);
   if (matched.length) return matched;
   // Nama tunggal tetap dapat direkap meskipun belum ada di daftar cache.
-  const lower = normalized;
   const hasGroupSeparator = /[&+,/]/.test(raw) ||
-    /\\b(dan|feat|ft)\\b/i.test(lower) ||
-    /\\s+x\\s+/i.test(lower);
+    /\b(dan|feat|ft)\b/i.test(raw) ||
+    /\s+x\s+/i.test(raw);
   return hasGroupSeparator ? [] : [raw];
 }
 
