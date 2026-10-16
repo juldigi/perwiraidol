@@ -2033,7 +2033,7 @@ async function renderRekap(content) {
   }
 }
 
-function aggregateRecapRowsByParticipant(rows, knownNames) {
+function aggregateRecapRowsByParticipant(rows, knownNames, type = "combined") {
   const sourceRows = rows || [];
   const officialNames = (knownNames || []).map(n => String(n || "").trim()).filter(Boolean);
   const names = officialNames.length ? officialNames : sourceRows
@@ -2041,7 +2041,8 @@ function aggregateRecapRowsByParticipant(rows, knownNames) {
     .filter(n => n && !/[&+,/]/.test(n) && !/\b(dan|feat|ft)\b/i.test(n) && !/\s+x\s+/i.test(n));
   const merged = new Map();
   sourceRows.forEach(row => {
-    const score = Number(row.total ?? row.effectiveTotal ?? row.totalEfektif ?? 0);
+    const selectedScore = type === "solo" ? row.soloTotal : type === "group" ? row.groupTotal : (row.total ?? row.effectiveTotal ?? row.totalEfektif ?? 0);
+    const score = Number(selectedScore ?? 0);
     if (!Number.isFinite(score)) return;
     const members = trendIndividualNames(row.nama, names);
     members.forEach(name => {
@@ -2055,7 +2056,7 @@ function aggregateRecapRowsByParticipant(rows, knownNames) {
       }
       const item = merged.get(name);
       item.total += score;
-      const song = String(row.lagu || "").trim();
+      const song = String(type === "solo" ? (row.soloLagu ?? row.lagu) : type === "group" ? (row.groupLagu ?? "") : (row.lagu || "")).trim();
       if (song) item.laguSet.add(song);
       if (item.nomorUrut === "" && row.nomorUrut != null) item.nomorUrut = row.nomorUrut;
     });
@@ -2073,8 +2074,8 @@ function aggregateRecapRowsByParticipant(rows, knownNames) {
 function paintRekap(content, data) {
   const knownNames = (window._trendInitCache && window._trendInitCache.names) || [];
   const type = window._rekapTypeFilter || "combined";
-  const rawRows = (data.recap || []).filter(row => type === "combined" || trendRowCategory(row.nama) === type);
-  const rows = aggregateRecapRowsByParticipant(rawRows, knownNames);
+  const rawRows = (data.recap || []).filter(row => type === "combined" || Number(type === "solo" ? row.soloTotal : row.groupTotal) > 0);
+  const rows = aggregateRecapRowsByParticipant(rawRows, knownNames, type);
   const juri = window._rekapJuriFilter || "";
   content.innerHTML = `
     <div class="panel p-4 circuit-line overflow-x-auto">
@@ -2272,11 +2273,12 @@ function trendRowCategory(rowName) {
   return (/[&+,/]/.test(value) || /\b(dan|feat|ft)\b/i.test(value) || /\s+x\s+/i.test(value)) ? "group" : "solo";
 }
 
-function aggregateTrendRows(rows, knownNames) {
+function aggregateTrendRows(rows, knownNames, type = "combined") {
   const totals = new Map();
   (rows || []).forEach(row => {
-    const score = Number(row.total ?? row.effectiveTotal ?? row.totalEfektif ?? 0);
-    if (!Number.isFinite(score)) return;
+    const selectedScore = type === "solo" ? row.soloTotal : type === "group" ? row.groupTotal : (row.total ?? row.effectiveTotal ?? row.totalEfektif ?? 0);
+    const score = Number(selectedScore ?? 0);
+    if (!Number.isFinite(score) || score <= 0) return;
     trendIndividualNames(row.nama, knownNames).forEach(name => {
       totals.set(name, (totals.get(name) || 0) + score);
     });
@@ -2288,8 +2290,8 @@ async function fetchTrendStage(stage, juri, type = "combined") {
   const params = { stage };
   if (juri) params.juri = juri;
   const data = await api("getRecap", params);
-  const rows = (data.recap || []).filter(row => type === "combined" || trendRowCategory(row.nama) === type);
-  return aggregateTrendRows(rows, window._trendInitCache?.names || []);
+  const rows = (data.recap || []).filter(row => type === "combined" || Number(type === "solo" ? row.soloTotal : row.groupTotal) > 0);
+  return aggregateTrendRows(rows, window._trendInitCache?.names || [], type);
 }
 
 async function updateTrendView() {
