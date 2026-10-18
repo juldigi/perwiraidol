@@ -2152,10 +2152,10 @@ async function renderTrend(content) {
     // Dulu 2 request terpisah (getAllParticipantsAcrossStages + getAdminConfig),
     // sekarang 1 request saja -> separuh waktu tunggu saat pertama buka menu Trend.
     const data = await api("getTrendInit", {}).catch(() => ({ names: [], activeStage: STAGES[0], juriList: [] }));
-    names = trendCanonicalNames(data.names || []);
+    names = data.names || [];
     activeStage = data.activeStage || STAGES[0];
     if (Array.isArray(data.juriList) && data.juriList.length) JURI_LIST = data.juriList;
-    window._trendInitCache = { names: trendCanonicalNames(names), activeStage };
+    window._trendInitCache = { names, activeStage };
   }
 
   content.innerHTML = `
@@ -2216,7 +2216,7 @@ async function renderTrend(content) {
         <label class="block text-xs text-slate-400 mb-1">Pilih Nama Peserta</label>
         <select id="selTrendPeserta" class="w-full text-sm">
           <option value="">-- Pilih Peserta --</option>
-          ${names.map(n => `<option value="${escapeAttr(n)}">${escapeHtml(n)}</option>`).join("")}
+          ${trendCanonicalNames(names).map(n => `<option value="${escapeAttr(n)}">${escapeHtml(n)}</option>`).join("")}
         </select>` + juriFilterHtml;
       document.getElementById("selTrendPeserta").onchange = updateTrendView;
       document.getElementById("selTrendJuri").onchange = updateTrendView;
