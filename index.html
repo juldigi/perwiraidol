@@ -2241,9 +2241,23 @@ function trendNameKey(value) {
   return String(value || "").normalize("NFKC").toLocaleLowerCase("id-ID")
     .replace(/[^\p{L}\p{N}]/gu, "");
 }
+// Alias nama yang sudah dikonfirmasi pengguna: jangan bergantung pada
+// kemiripan ejaan otomatis untuk pasangan nama pendek/berbeda satu huruf.
+const TREND_CONFIRMED_NAME_ALIASES = [
+  ["Desi", "Desy"],
+  ["Khay", "Khaylila"],
+  ["Rifal", "Rifaldi"]
+];
+function trendNamesAreConfirmedAliases(a, b) {
+  const x = trendNameKey(a), y = trendNameKey(b);
+  return TREND_CONFIRMED_NAME_ALIASES.some(group => {
+    const keys = group.map(trendNameKey);
+    return keys.includes(x) && keys.includes(y);
+  });
+}
 function trendNameSimilarity(a, b) {
   const x = trendNameKey(a), y = trendNameKey(b);
-  if (!x || !y || x === y) return true;
+  if (!x || !y || x === y || trendNamesAreConfirmedAliases(a, b)) return true;
   const shorter = x.length <= y.length ? x : y;
   const longer = x.length <= y.length ? y : x;
   // Aturan prefix menangani penulisan yang bertambah/berkurang di ujung nama.
