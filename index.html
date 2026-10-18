@@ -2152,10 +2152,10 @@ async function renderTrend(content) {
     // Dulu 2 request terpisah (getAllParticipantsAcrossStages + getAdminConfig),
     // sekarang 1 request saja -> separuh waktu tunggu saat pertama buka menu Trend.
     const data = await api("getTrendInit", {}).catch(() => ({ names: [], activeStage: STAGES[0], juriList: [] }));
-    names = data.names || [];
+    names = trendCanonicalNames(data.names || []);
     activeStage = data.activeStage || STAGES[0];
     if (Array.isArray(data.juriList) && data.juriList.length) JURI_LIST = data.juriList;
-    window._trendInitCache = { names, activeStage };
+    window._trendInitCache = { names: trendCanonicalNames(names), activeStage };
   }
 
   content.innerHTML = `
@@ -2233,20 +2233,72 @@ async function renderTrend(content) {
   renderSubFilter();
 }
 
-// Normalisasi nama peserta pada entri solo maupun duet/trio.
-// Skor performa grup dikreditkan ke setiap anggota grup agar total individu
-// merupakan gabungan skor solo dan skor duet/trio yang diikutinya.
+// Normalisasi identitas peserta lintas babak. Variasi nama yang sangat mirip
+// dianggap satu orang (mis. "Rifal" dan "Rifaldi"), lalu ditampilkan memakai
+// nama kanonis terpanjang. Nama pendek seperti "Ana" tidak digabung dengan
+// "Ananda": alias prefix hanya diterapkan jika nama pendek minimal 5 karakter.
+function trendNameKey(value) {
+  return String(value || "").normalize("NFKC").toLocaleLowerCase("id-ID")
+    .replace(/[^\p{L}\p{N}]/gu, "");
+}
+function trendNameSimilarity(a, b) {
+  const x = trendNameKey(a), y = trendNameKey(b);
+  if (!x || !y || x === y) return true;
+  const shorter = x.length <= y.length ? x : y;
+  const longer = x.length <= y.length ? y : x;
+  // Aturan prefix menangani penulisan yang bertambah/berkurang di ujung nama.
+  if (shorter.length >= 5 && longer.startsWith(shorter) && longer.length - shorter.length <= 3) return true;
+  // Toleransi satu karakter untuk salah ketik ringan pada nama yang cukup panjang.
+  if (Math.min(x.length, y.length) >= 6 && Math.abs(x.length-y.length) <= 1) {
+    let i=0, j=0, edits=0;
+    while (i<x.length && j<y.length) {
+      if (x[i] === y[j]) { i++; j++; continue; }
+      edits++;
+      if (edits > 1) return false;
+      if (x.length > y.length) i++;
+      else if (y.length > x.length) j++;
+      else { i++; j++; }
+    }
+    if (i<x.length || j<y.length) edits++;
+    return edits <= 1;
+  }
+  return false;
+}
+function trendCanonicalNameGroups(knownNames) {
+  const names = [...new Set((knownNames || []).map(n => String(n || "").trim()).filter(Boolean))];
+  const groups = [];
+  names.forEach(name => {
+    const key = trendNameKey(name);
+    if (!key) return;
+    const matches = [];
+    groups.forEach((group, index) => {
+      if (group.aliases.some(alias => trendNameSimilarity(alias, name))) matches.push(index);
+    });
+    if (!matches.length) groups.push({ canonical: name, aliases: [name] });
+    else {
+      const first = groups[matches[0]];
+      first.aliases.push(name);
+      if (name.length > first.canonical.length) first.canonical = name;
+      for (let k=matches.length-1;k>=1;k--) {
+        const other = groups.splice(matches[k],1)[0];
+        first.aliases.push(...other.aliases);
+        if (other.canonical.length > first.canonical.length) first.canonical = other.canonical;
+      }
+    }
+  });
+  return groups;
+}
+function trendCanonicalNames(knownNames) {
+  return trendCanonicalNameGroups(knownNames).map(g => g.canonical);
+}
 function trendIndividualNames(rowName, knownNames) {
   const raw = String(rowName || "").trim();
   if (!raw) return [];
-  const normalized = raw.toLocaleLowerCase("id-ID");
+  const normalized = raw.normalize("NFKC").toLocaleLowerCase("id-ID");
   const isWordChar = ch => !!ch && /[\p{L}\p{N}]/u.test(ch);
-  const isGroupName = value => {
-    const s = String(value || "");
-    return /[&+,/]/.test(s) || /\b(dan|feat|ft)\b/i.test(s) || /\s+x\s+/i.test(s);
-  };
-  const containsWholeName = name => {
-    const needle = String(name || "").trim().toLocaleLowerCase("id-ID");
+  const isGroupName = value => /[&+,/]/.test(String(value || "")) || /\b(dan|feat|ft)\b/i.test(String(value || "")) || /\s+x\s+/i.test(String(value || ""));
+  const containsAlias = alias => {
+    const needle = String(alias || "").trim().normalize("NFKC").toLocaleLowerCase("id-ID");
     if (!needle) return false;
     let from = 0;
     while (true) {
@@ -2255,17 +2307,15 @@ function trendIndividualNames(rowName, knownNames) {
       const before = at > 0 ? normalized[at - 1] : "";
       const afterIndex = at + needle.length;
       const after = afterIndex < normalized.length ? normalized[afterIndex] : "";
-      if (!isWordChar(before) && !isWordChar(after)) return true;
+      if ((!isWordChar(before) && !isWordChar(after)) ||
+          (needle.length >= 5 && (at === 0 || !isWordChar(before)) && normalized.startsWith(needle, at))) return true;
       from = at + 1;
     }
   };
-  const individualNames = [...new Set((knownNames || [])
-    .map(n => String(n || "").trim())
-    .filter(n => n && !isGroupName(n)))].sort((a,b) => b.length - a.length);
-  // Rekap hanya boleh menghasilkan nama peserta resmi. Baris duet/trio
-  // dipetakan ke setiap nama anggota yang cocok; label grup tak pernah jadi
-  // kategori/seri tersendiri jika tidak ada nama anggota yang cocok.
-  return individualNames.filter(containsWholeName);
+  const groups = trendCanonicalNameGroups((knownNames || []).filter(n => !isGroupName(n)));
+  // Set kanonis mencegah satu baris nilai dihitung dua kali ketika dua alias
+  // dari peserta yang sama sama-sama tertulis pada label penampilan.
+  return [...new Set(groups.filter(g => g.aliases.some(containsAlias)).map(g => g.canonical))];
 }
 
 function trendRowCategory(rowName) {
