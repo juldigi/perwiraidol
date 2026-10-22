@@ -1615,17 +1615,8 @@ async function renderSpinner(content) {
     window._spinnerCfgCache = cfg;
   }
   const participants = cfg.participants || [];
-  if (isTop6Stage(cfg.activeStage)) {
-    content.innerHTML = `
-      <div class="panel p-5 circuit-line text-center">
-        <h2 class="font-display text-lg text-amber-300 mb-2">Spinner TOP6 Tidak Digunakan</h2>
-        <p class="text-sm text-slate-300">Urutan nomor pada TOP6 mengikat dua lagu dari peserta yang sama: nomor 1–6 untuk Segmen 1 (40%) dan nomor 7–12 untuk Segmen 2 (60%). Pengacakan terpisah dapat memutus pasangan penilaian.</p>
-        <p class="text-xs text-slate-400 mt-3">Atur urutan peserta melalui Setting Babak. Setiap peserta akan tampil pada kedua segmen dengan nomor dasar yang sama.</p>
-      </div>`;
-    return;
-  }
-
-  // Babak Battle TOP22: satu putaran roda = SATU GRUP BATTLE (isi 2 peserta
+  // Spinner hanyalah simulasi visual untuk semua babak, termasuk TOP6.
+  // Tidak boleh mengubah nomor peserta atau lagu yang disimpan.  // Babak Battle TOP22: satu putaran roda = SATU GRUP BATTLE (isi 2 peserta
   // sekaligus), bukan satu peserta. Roda menampilkan label "Grup #1", "Grup #2",
   // dst — bukan nama peserta — dan setiap kali diputar, roda berhenti pada grup
   // paling depan di antrian (urutan grup mengikuti urutan NomorUrut di Sheets,
@@ -1700,6 +1691,9 @@ async function renderSpinner(content) {
         ${isFinished ? '' : (isTOP22
           ? `Mengundi <span class="font-bold text-cyan-300">Grup Urutan Tampil ke${nextNo}</span> (Sisa ${spState.remaining.length} Grup)`
           : `Nomor Urut Berikutnya: <span class="font-bold text-cyan-300">#${nextNo}</span>`)}
+      </p> 
+      <p class="text-xs rounded-lg px-3 py-2 mb-4" style="color:#aab1cf;background:rgba(122,86,255,.08);border:1px solid rgba(122,86,255,.22);">
+        Simulasi visual saja — tidak mengubah nomor urut, nama peserta, atau judul lagu yang tersimpan.
       </p>
 
       <div class="relative mx-auto mb-6" style="width:320px; max-width:100%; aspect-ratio:1/1;">
@@ -1785,23 +1779,8 @@ async function renderSpinner(content) {
       spState.remaining.splice(0, 1);
       spState.wheelOrder1 = shuffleArray([...spState.remaining]);
 
-      let updatedParticipants;
-      if (isTOP22) {
-        const flatAssigned = [];
-        spState.assigned.forEach(g => g.members.forEach(m => flatAssigned.push(m)));
-        const flatRemaining = [];
-        spState.remaining.forEach(g => g.members.forEach(m => flatRemaining.push(m)));
-        updatedParticipants = [...flatAssigned, ...flatRemaining].map((p, idx) => ({ ...p, nomorUrut: idx + 1 }));
-      } else {
-        updatedParticipants = [
-          ...spState.assigned,
-          ...spState.remaining.map((p, idx) => ({ ...p, nomorUrut: spState.assigned.length + idx + 1 }))
-        ];
-      }
-
-      // Simpan ke Google Sheets di background — tidak menahan UI.
-      api("setParticipants", { stage: cfg.activeStage, participants: updatedParticipants })
-        .catch(e => console.error("Gagal update Google Sheets", e));
+      // Hasil spin disimpan hanya di state lokal untuk animasi dan tabel.
+      // Tidak ada pemanggilan setParticipants: urutan asli dan judul lagu tetap aman.
 
       if (isTOP22) {
         showBattleResultModal(targetUnit, spState.remaining.length, () => {
@@ -1865,12 +1844,12 @@ function renderPlainSpinTable(assigned) {
   const list = assigned || [];
   if (list.length === 0) {
     return `
-      <h3 class="font-display text-md text-cyan-300 mb-3">Tabel Hasil Spin / Urutan Tampil</h3>
+      <h3 class="font-display text-md text-cyan-300 mb-3">Hasil Putaran Spinner — Simulasi Visual</h3>
       <p class="text-sm text-slate-500">Belum ada peserta yang diundi.</p>
     `;
   }
   return `
-    <h3 class="font-display text-md text-cyan-300 mb-3">Tabel Hasil Spin / Urutan Tampil (${list.length} Peserta Terundi)</h3>
+    <h3 class="font-display text-md text-cyan-300 mb-3">Hasil Putaran Spinner — Simulasi Visual (${list.length})</h3>
     <div class="overflow-x-auto">
       <table class="w-full text-sm">
         <thead>
