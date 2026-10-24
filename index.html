@@ -2088,6 +2088,7 @@ window._rekapCache = null;
 
 window._rekapJuriFilter = "";
 window._rekapTypeFilter = "combined";
+window._rekapSegmentFilter = "combined";
 
 async function renderRekap(content) {
   await ensureJuriList();
@@ -2147,6 +2148,7 @@ function aggregateTop6RecapRows(rows, knownNames = []) {
         nomorUrut: baseNo,
         nama: participantName,
         hasSegment1: false,
+        hasSegment2: false,
         segment1Raw: 0,
         segment2Raw: 0,
         segment1Contribution: 0,
@@ -2159,6 +2161,9 @@ function aggregateTop6RecapRows(rows, knownNames = []) {
 
     const item = byParticipant.get(participantKey);
     const rawScore = Number(row.total ?? row.effectiveTotal ?? row.totalEfektif ?? 0);
+    if (segment === 1) item.hasSegment1 = true;
+    else item.hasSegment2 = true;
+
     if (Number.isFinite(rawScore)) {
       if (segment === 1) item.segment1Raw += rawScore;
       else item.segment2Raw += rawScore;
@@ -2190,7 +2195,6 @@ function aggregateTop6RecapRows(rows, knownNames = []) {
       song1 ? "S1: " + song1 : "",
       song2 ? "S2: " + song2 : ""
     ].filter(Boolean).join(" · ");
-    delete item.hasSegment1;
     delete item.song1Set;
     delete item.song2Set;
     return item;
@@ -2242,17 +2246,35 @@ function paintRekap(content, data) {
   const knownNames = (window._trendInitCache && window._trendInitCache.names) || [];
   const type = window._rekapTypeFilter || "combined";
   const isTop6 = isTop6Stage(data.stage);
+  const segmentFilter = isTop6 ? (window._rekapSegmentFilter || "combined") : "combined";
   const rawRows = (data.recap || []).filter(row => isTop6
     ? type !== "group"
     : (type === "combined" || Number(type === "solo" ? row.soloTotal : row.groupTotal) > 0));
-  const rows = aggregateRecapRowsByParticipant(rawRows, knownNames, type, data.stage);
+  const aggregatedRows = aggregateRecapRowsByParticipant(rawRows, knownNames, type, data.stage);
+  const rows = isTop6
+    ? aggregatedRows
+        .filter(row => segmentFilter === "segment1" ? row.hasSegment1 : segmentFilter === "segment2" ? row.hasSegment2 : true)
+        .sort((a, b) => segmentFilter === "segment1"
+          ? b.segment1Contribution - a.segment1Contribution
+          : segmentFilter === "segment2"
+            ? b.segment2Contribution - a.segment2Contribution
+            : b.total - a.total)
+    : aggregatedRows;
   const juri = window._rekapJuriFilter || "";
   content.innerHTML = `
     <div class="panel p-4 circuit-line overflow-x-auto">
       <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
         <h2 class="font-display text-lg text-cyan-300">Rekap Nilai Total Efektif — ${escapeHtml(data.stage || "")}</h2>
       </div>
-      ${isTop6 ? `<p class="text-xs text-slate-400 mb-3">Rumus TOP6: (total nilai Lagu Segmen 1 × 40%) + (total nilai Lagu Segmen 2 × 60%). Kontribusi setiap segmen ditampilkan agar hasil dapat diperiksa.</p>` : ""}
+      ${isTop6 ? `<p class="text-xs text-slate-400 mb-3">Rumus TOP6: (total nilai Lagu Segmen 1 × 40%) + (total nilai Lagu Segmen 2 × 60%). Gunakan pilihan segmen untuk melihat hasil masing-masing secara terpisah.</p>` : ""}
+      ${isTop6 ? `<div class="mb-3">
+        <label class="block text-xs text-slate-400 mb-1">Tampilan Segmen</label>
+        <select id="selRekapSegment" class="w-full text-sm">
+          <option value="combined" ${segmentFilter === "combined" ? "selected" : ""}>Gabungan Segmen 1 + 2</option>
+          <option value="segment1" ${segmentFilter === "segment1" ? "selected" : ""}>Hanya Segmen 1 (40%)</option>
+          <option value="segment2" ${segmentFilter === "segment2" ? "selected" : ""}>Hanya Segmen 2 (60%)</option>
+        </select>
+      </div>` : ""}
       <div class="mb-3">
         <label class="block text-xs text-slate-400 mb-1">Jenis Penampilan</label>
         <select id="selRekapType" class="w-full text-sm">
@@ -2272,8 +2294,12 @@ function paintRekap(content, data) {
         <thead><tr class="text-slate-400 text-left">
           <th class="py-2 pr-2">Peringkat</th><th class="py-2 pr-2">No</th><th class="py-2 pr-2">Nama</th>
           <th class="py-2 pr-2">Lagu</th>
-          ${isTop6 ? `<th class="py-2 pr-2 text-right">Kontribusi S1 (40%)</th><th class="py-2 pr-2 text-right">Kontribusi S2 (60%)</th>` : ""}
-          <th class="py-2 pr-2 text-right">Total Efektif</th>
+          ${isTop6 ? (segmentFilter === "combined"
+            ? `<th class="py-2 pr-2 text-right">Kontribusi S1 (40%)</th><th class="py-2 pr-2 text-right">Kontribusi S2 (60%)</th>`
+            : segmentFilter === "segment1"
+              ? `<th class="py-2 pr-2 text-right">Total Segmen 1 (40%)</th>`
+              : `<th class="py-2 pr-2 text-right">Total Segmen 2 (60%)</th>`) : ""}
+          ${!isTop6 || segmentFilter === "combined" ? `<th class="py-2 pr-2 text-right">Total Efektif</th>` : ""}
         </tr></thead>
         <tbody>
           ${rows.length ? rows.map((r, i) => {
@@ -2283,10 +2309,12 @@ function paintRekap(content, data) {
               <td class="py-2 pr-2">${r.nomorUrut}</td>
               <td class="py-2 pr-2">${escapeHtml(r.nama)}</td>
               <td class="py-2 pr-2 text-slate-400">${escapeHtml(r.lagu)}</td>
-              ${isTop6 ? `<td class="py-2 pr-2 text-right">${Number(r.segment1Contribution || 0).toFixed(2)}</td><td class="py-2 pr-2 text-right">${Number(r.segment2Contribution || 0).toFixed(2)}</td>` : ""}
-              <td class="py-2 pr-2 text-right font-display">${Number(r.total || 0).toFixed(2)}</td>
+              ${isTop6 ? (segmentFilter === "combined"
+                ? `<td class="py-2 pr-2 text-right">${Number(r.segment1Contribution || 0).toFixed(2)}</td><td class="py-2 pr-2 text-right">${Number(r.segment2Contribution || 0).toFixed(2)}</td>`
+                : `<td class="py-2 pr-2 text-right">${Number(segmentFilter === "segment1" ? r.segment1Contribution : r.segment2Contribution).toFixed(2)}</td>`) : ""}
+              ${!isTop6 || segmentFilter === "combined" ? `<td class="py-2 pr-2 text-right font-display">${Number(r.total || 0).toFixed(2)}</td>` : ""}
             </tr>`;
-          }).join("") : `<tr><td colspan="${isTop6 ? 7 : 5}" class="py-6 text-center text-slate-400">${isTop6 && type === "group" ? "Babak TOP6 seluruhnya solo; tidak ada penampilan duet/trio." : "Belum ada nilai untuk filter ini."}</td></tr>`}
+          }).join("") : `<tr><td colspan="${isTop6 ? (segmentFilter === "combined" ? 7 : 6) : 5}" class="py-6 text-center text-slate-400">${isTop6 && type === "group" ? "Babak TOP6 seluruhnya solo; tidak ada penampilan duet/trio." : "Belum ada nilai untuk filter ini."}</td></tr>`}
         </tbody>
       </table>
       <div class="flex gap-4 mt-4 text-xs text-slate-400">
@@ -2296,6 +2324,12 @@ function paintRekap(content, data) {
       </div>
     </div>`;
 
+  const segmentSelect = document.getElementById("selRekapSegment");
+  if (segmentSelect) segmentSelect.onchange = (e) => {
+    window._rekapSegmentFilter = e.target.value;
+    if (window._rekapCache) paintRekap(content, window._rekapCache);
+    else renderRekap(content);
+  };
   document.getElementById("selRekapType").onchange = (e) => {
     window._rekapTypeFilter = e.target.value;
     renderRekap(content);
