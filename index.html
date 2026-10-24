@@ -2121,45 +2121,78 @@ async function renderRekap(content) {
   }
 }
 
-function aggregateTop6RecapRows(rows) {
-  const byBaseNo = new Map();
+function aggregateTop6RecapRows(rows, knownNames = []) {
+  // Cocokkan dua segmen berdasarkan identitas nama peserta, bukan nomor urut.
+  // Nomor 1–6 dan 7–12 hanya dipakai untuk mengenali segmen dan nomor tampilan.
+  const byParticipant = new Map();
+  const officialNames = (knownNames || []).map(name => String(name || "").trim()).filter(Boolean);
+
   (rows || []).forEach(row => {
     const n = Number(row.nomorUrut);
     if (!Number.isInteger(n) || n < 1 || n > 12) return;
+
     const segment = n <= 6 ? 1 : 2;
     const baseNo = segment === 1 ? n : n - 6;
-    if (!byBaseNo.has(baseNo)) {
-      byBaseNo.set(baseNo, {
-        nomorUrut: baseNo, nama: "", segment1Raw: 0, segment2Raw: 0,
-        segment1Contribution: 0, segment2Contribution: 0, total: 0,
-        song1: "", song2: ""
+    const rawName = String(row.nama || "").trim();
+    // Tanpa nama, baris tidak bisa dipasangkan dengan aman ke peserta yang benar.
+    if (!rawName) return;
+
+    const canonicalMatches = trendIndividualNames(rawName, officialNames);
+    const participantName = canonicalMatches.length === 1 ? canonicalMatches[0] : rawName;
+    const participantKey = trendNameKey(participantName);
+    if (!participantKey) return;
+
+    if (!byParticipant.has(participantKey)) {
+      byParticipant.set(participantKey, {
+        nomorUrut: baseNo,
+        nama: participantName,
+        hasSegment1: false,
+        segment1Raw: 0,
+        segment2Raw: 0,
+        segment1Contribution: 0,
+        segment2Contribution: 0,
+        total: 0,
+        song1Set: new Set(),
+        song2Set: new Set()
       });
     }
-    const item = byBaseNo.get(baseNo);
+
+    const item = byParticipant.get(participantKey);
     const rawScore = Number(row.total ?? row.effectiveTotal ?? row.totalEfektif ?? 0);
     if (Number.isFinite(rawScore)) {
       if (segment === 1) item.segment1Raw += rawScore;
       else item.segment2Raw += rawScore;
     }
-    const name = String(row.nama || "").trim();
+
     const song = String(row.lagu || "").trim();
     if (segment === 1) {
-      if (name) item.nama = name;
-      if (song) item.song1 = song;
+      // Nomor Segmen 1 menjadi nomor tampilan utama, walau baris S2 datang lebih dulu.
+      item.hasSegment1 = true;
+      item.nomorUrut = n;
+      if (song) item.song1Set.add(song);
     } else {
-      if (!item.nama && name) item.nama = name;
-      if (song) item.song2 = song;
+      if (!item.hasSegment1) item.nomorUrut = baseNo;
+      if (song) item.song2Set.add(song);
     }
+
+    // Pertahankan ejaan nama kanonis dari daftar peserta bila tersedia.
+    if (canonicalMatches.length === 1) item.nama = canonicalMatches[0];
+    else if (rawName.length > item.nama.length) item.nama = rawName;
   });
 
-  return [...byBaseNo.values()].map(item => {
+  return [...byParticipant.values()].map(item => {
     item.segment1Contribution = Math.round(item.segment1Raw * 0.4 * 100) / 100;
     item.segment2Contribution = Math.round(item.segment2Raw * 0.6 * 100) / 100;
     item.total = Math.round((item.segment1Contribution + item.segment2Contribution) * 100) / 100;
+    const song1 = [...item.song1Set].join(" + ");
+    const song2 = [...item.song2Set].join(" + ");
     item.lagu = [
-      item.song1 ? "S1: " + item.song1 : "",
-      item.song2 ? "S2: " + item.song2 : ""
+      song1 ? "S1: " + song1 : "",
+      song2 ? "S2: " + song2 : ""
     ].filter(Boolean).join(" · ");
+    delete item.hasSegment1;
+    delete item.song1Set;
+    delete item.song2Set;
     return item;
   }).sort((a, b) => b.total - a.total);
 }
@@ -2167,7 +2200,7 @@ function aggregateTop6RecapRows(rows) {
 function aggregateRecapRowsByParticipant(rows, knownNames, type = "combined", stage = "") {
   if (isTop6Stage(stage)) {
     if (type === "group") return [];
-    return aggregateTop6RecapRows(rows).map(item => {
+    return aggregateTop6RecapRows(rows, knownNames).map(item => {
       const canonicalNames = trendIndividualNames(item.nama, knownNames);
       return { ...item, nama: canonicalNames[0] || item.nama };
     }).sort((a, b) => b.total - a.total);
@@ -2485,7 +2518,7 @@ function aggregateTrendRows(rows, knownNames, type = "combined", stage = "") {
   const totals = new Map();
   if (isTop6Stage(stage)) {
     if (type === "group") return totals;
-    aggregateTop6RecapRows(rows).forEach(item => {
+    aggregateTop6RecapRows(rows, knownNames).forEach(item => {
       const canonicalNames = trendIndividualNames(item.nama, knownNames);
       (canonicalNames.length ? canonicalNames : [item.nama]).forEach(name => {
         totals.set(name, (totals.get(name) || 0) + item.total);
