@@ -571,6 +571,13 @@ const STAGES = [
   "TOP30 Live Elimination 1","TOP22 Live Elimination 2: Battle 1 vs 1","TOP18","TOP15","TOP13",
   "TOP12","TOP11","TOP10","TOP9","TOP8","TOP7","TOP6","TOP5: Grand Final"
 ];
+// Nama internal backend tetap dipertahankan agar data peserta dan nilai Grand Final
+// yang sudah tersimpan tidak terputus. Yang ditampilkan kepada pengguna: GRAND FINAL.
+function stageLabel(stage) {
+  return String(stage || "").trim().toUpperCase() === "TOP5: GRAND FINAL"
+    ? "GRAND FINAL"
+    : String(stage || "");
+}
 </script>
 
 <div id="app"></div>
@@ -1465,7 +1472,7 @@ function paintSetting(content, cfg) {
     <div class="panel p-4 mb-3 circuit-line">
       <h2 class="font-display text-lg text-cyan-300 mb-3">Babak Berjalan</h2>
       <select id="selStage" class="w-full text-lg py-3">
-        ${STAGES.map(s=>`<option value="${s}" ${s===activeStage?'selected':''}>${s}</option>`).join("")}
+        ${STAGES.map(s=>`<option value="${s}" ${s===activeStage?'selected':''}>${escapeHtml(stageLabel(s))}</option>`).join("")}
       </select>
       <button id="btnSetStage" class="btn-primary w-full py-3 rounded-xl mt-3">Aktifkan Babak</button>
     </div>
@@ -1718,7 +1725,7 @@ async function renderSpinner(content) {
 
   content.innerHTML = `
     <div class="panel p-6 circuit-line text-center">
-      <h2 class="font-display text-lg text-amber-300 mb-1">${isTOP22 ? 'Spinner Battle TOP 22' : 'Spinner Undian'} — ${escapeHtml(cfg.activeStage)}</h2>
+      <h2 class="font-display text-lg text-amber-300 mb-1">${isTOP22 ? 'Spinner Battle TOP 22' : 'Spinner Undian'} — ${escapeHtml(stageLabel(cfg.activeStage))}</h2>
       <p class="text-xs text-slate-400 mb-4">
         ${isFinished ? '' : (isTOP22
           ? `Mengundi <span class="font-bold text-cyan-300">Grup Urutan Tampil ke${nextNo}</span> (Sisa ${spState.remaining.length} Grup)`
@@ -2296,7 +2303,7 @@ function paintRekap(content, data) {
   content.innerHTML = `
     <div class="panel p-4 circuit-line overflow-x-auto">
       <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-        <h2 class="font-display text-lg text-cyan-300">Rekap Nilai Total Efektif — ${escapeHtml(data.stage || "")}</h2>
+        <h2 class="font-display text-lg text-cyan-300">Rekap Nilai Total Efektif — ${escapeHtml(stageLabel(data.stage || ""))}</h2>
       </div>
       ${isTop6 ? `<p class="text-xs text-slate-400 mb-3">Rumus Grand Final: (total nilai Segmen 1 × 40%) + (total nilai Segmen 2 × 60%). Gunakan pilihan segmen untuk melihat hasil masing-masing secara terpisah.</p>` : ""}
       ${isTop6 ? `<div class="mb-3">
@@ -2446,7 +2453,7 @@ async function renderTrend(content) {
       subWrap.innerHTML = typeFilterHtml + `
         <label class="block text-xs text-slate-400 mb-1">Pilih Babak</label>
         <select id="selTrendStage" class="w-full text-sm">
-          ${STAGES.map(s => `<option value="${s}" ${s === activeStage ? 'selected' : ''}>${s}</option>`).join("")}
+          ${STAGES.map(s => `<option value="${s}" ${s === activeStage ? 'selected' : ''}>${escapeHtml(stageLabel(s))}</option>`).join("")}
         </select>` + juriFilterHtml;
       document.getElementById("selTrendStage").onchange = updateTrendView;
       document.getElementById("selTrendJuri").onchange = updateTrendView;
