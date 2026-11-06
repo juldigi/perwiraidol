@@ -1490,7 +1490,7 @@ function paintSetting(content, cfg) {
 
     <div class="panel p-4 mb-3 circuit-line">
       <h2 class="font-display text-lg text-amber-300 mb-3">Bobot Kriteria Penilaian (%)</h2>
-      ${isTop6 ? `<p class="text-xs text-cyan-300 mb-3">Bobot kriteria berlaku untuk masing-masing lagu. Nilai akhir Grand Final dihitung dari rata-rata nilai juri Segmen 1 × 40% + rata-rata nilai juri Segmen 2 × 60%.</p>` : ""}
+      ${isTop6 ? `<p class="text-xs text-cyan-300 mb-3">Bobot kriteria berlaku untuk masing-masing lagu. Nilai akhir Grand Final dihitung dari total nilai juri Segmen 1 × 40% + total nilai juri Segmen 2 × 60%.</p>` : ""}
       <div class="grid grid-cols-2 gap-3">
         ${CRITERIA.map(c=>`
           <div>
