@@ -2298,7 +2298,7 @@ function paintRekap(content, data) {
       <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
         <h2 class="font-display text-lg text-cyan-300">Rekap Nilai Total Efektif — ${escapeHtml(data.stage || "")}</h2>
       </div>
-      ${isTop6 ? `<p class="text-xs text-slate-400 mb-3">Rumus Grand Final: (rata-rata nilai juri Segmen 1 × 40%) + (rata-rata nilai juri Segmen 2 × 60%). Gunakan pilihan segmen untuk melihat hasil masing-masing secara terpisah.</p>` : ""}
+      ${isTop6 ? `<p class="text-xs text-slate-400 mb-3">Rumus Grand Final: (total nilai Segmen 1 × 40%) + (total nilai Segmen 2 × 60%). Gunakan pilihan segmen untuk melihat hasil masing-masing secara terpisah.</p>` : ""}
       ${isTop6 ? `<div class="mb-3">
         <label class="block text-xs text-slate-400 mb-1">Tampilan Segmen</label>
         <select id="selRekapSegment" class="w-full text-sm">
